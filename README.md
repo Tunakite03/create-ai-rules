@@ -25,24 +25,24 @@ No install required — just `npx` and go.
 
 ## Supported Targets
 
-| Target               | Files Generated |
-| -------------------- | --------------- |
+| Target               | Files Generated                                                              |
+| -------------------- | ---------------------------------------------------------------------------- |
 | **GitHub Copilot**   | `.github/copilot-instructions.md` + `instructions/` + `prompts/` + `skills/` |
-| **Cursor**           | `.cursor/rules/*.mdc` + `.cursor/skills/` |
-| **Windsurf**         | `.windsurfrules` |
-| **Claude Code**      | `CLAUDE.md` |
-| **Cline**            | `.clinerules` |
-| **Generic / Agents** | `AGENTS.md` |
+| **Cursor**           | `.cursor/rules/*.mdc` + `.cursor/skills/`                                    |
+| **Windsurf**         | `.windsurfrules`                                                             |
+| **Claude Code**      | `CLAUDE.md`                                                                  |
+| **Cline**            | `.clinerules`                                                                |
+| **Generic / Agents** | `AGENTS.md`                                                                  |
 
 ## Supported Stacks
 
-| Stack | Includes |
-| ----- | -------- |
-| **TypeScript** (generic) | TS strict mode, type patterns, barrel exports |
-| **React / Next.js** | Hooks, a11y, Tailwind + shadcn/ui style guide, component skills |
-| **Node.js API** | Zod validation, middleware, structured errors, graceful shutdown |
-| **Python** | Type hints, PEP 8, Pydantic, asyncio, pytest |
-| **Unity (C#)** | MonoBehaviour lifecycle, performance, ScriptableObject, architecture |
+| Stack                    | Includes                                                             |
+| ------------------------ | -------------------------------------------------------------------- |
+| **TypeScript** (generic) | TS strict mode, type patterns, barrel exports                        |
+| **React / Next.js**      | Hooks, a11y, Tailwind + shadcn/ui style guide, component skills      |
+| **Node.js API**          | Zod validation, middleware, structured errors, graceful shutdown     |
+| **Python**               | Type hints, PEP 8, Pydantic, asyncio, pytest                         |
+| **Unity (C#)**           | MonoBehaviour lifecycle, performance, ScriptableObject, architecture |
 
 ## CLI Flags
 
@@ -148,25 +148,25 @@ $ npx create-ai-rules
 
 ### Rules (all targets)
 
-| Category | What it covers |
-|----------|---------------|
-| **AI Behavior** | Read before write, plan before code, minimal diffs |
-| **Code Quality** | Small functions, explicit naming, early returns, pure functions |
-| **Error Handling** | Typed errors, actionable messages, boundary validation |
-| **Security** | No hardcoded secrets, input sanitization, parameterized queries |
-| **Performance** | Avoid N+1, pagination, lazy loading, streaming |
-| **Git** | Conventional commits, minimal diffs, single logical unit per change |
-| **UI Theme** | Never change colors/themes unless asked, use design tokens |
+| Category           | What it covers                                                      |
+| ------------------ | ------------------------------------------------------------------- |
+| **AI Behavior**    | Read before write, plan before code, minimal diffs                  |
+| **Code Quality**   | Small functions, explicit naming, early returns, pure functions     |
+| **Error Handling** | Typed errors, actionable messages, boundary validation              |
+| **Security**       | No hardcoded secrets, input sanitization, parameterized queries     |
+| **Performance**    | Avoid N+1, pagination, lazy loading, streaming                      |
+| **Git**            | Conventional commits, minimal diffs, single logical unit per change |
+| **UI Theme**       | Never change colors/themes unless asked, use design tokens          |
 
 ### Stack-Specific Rules
 
-| Stack | Key rules |
-|-------|-----------|
-| **TypeScript** | `strict: true`, `unknown` over `any`, discriminated unions, `satisfies`, `as const` |
-| **React** | Hooks patterns, a11y (WCAG AA), state management, error boundaries, Tailwind + shadcn/ui style guide |
-| **Node/API** | Zod validation, structured errors, middleware patterns, graceful shutdown, health checks |
-| **Python** | Type hints, PEP 8, dataclasses/Pydantic, `asyncio`, pytest |
-| **Unity** | MonoBehaviour lifecycle, `GetComponent` caching, object pooling, `ScriptableObject`, physics in `FixedUpdate` |
+| Stack          | Key rules                                                                                                     |
+| -------------- | ------------------------------------------------------------------------------------------------------------- |
+| **TypeScript** | `strict: true`, `unknown` over `any`, discriminated unions, `satisfies`, `as const`                           |
+| **React**      | Hooks patterns, a11y (WCAG AA), state management, error boundaries, Tailwind + shadcn/ui style guide          |
+| **Node/API**   | Zod validation, structured errors, middleware patterns, graceful shutdown, health checks                      |
+| **Python**     | Type hints, PEP 8, dataclasses/Pydantic, `asyncio`, pytest                                                    |
+| **Unity**      | MonoBehaviour lifecycle, `GetComponent` caching, object pooling, `ScriptableObject`, physics in `FixedUpdate` |
 
 ### Prompts (Copilot)
 
@@ -176,22 +176,22 @@ $ npx create-ai-rules
 
 Stack-aware task scaffolds with code templates and checklists:
 
-| Skill | Stacks |
-|-------|--------|
-| `git-workflow.md` | All |
-| `debug.md` | All |
-| `create-service.md` | TS, React, Node |
-| `create-types.md` | TS, React, Node |
-| `create-component.md` | React |
-| `create-hook.md` | React |
-| `create-page.md` | React |
-| `create-endpoint.md` | Node |
-| `create-middleware.md` | Node |
-| `create-module.md` | Python |
-| `create-dataclass.md` | Python |
-| `create-monobehaviour.md` | Unity |
-| `create-scriptableobject.md` | Unity |
-| `unity-architecture.md` | Unity |
+| Skill                        | Stacks          |
+| ---------------------------- | --------------- |
+| `git-workflow.md`            | All             |
+| `debug.md`                   | All             |
+| `create-service.md`          | TS, React, Node |
+| `create-types.md`            | TS, React, Node |
+| `create-component.md`        | React           |
+| `create-hook.md`             | React           |
+| `create-page.md`             | React           |
+| `create-endpoint.md`         | Node            |
+| `create-middleware.md`       | Node            |
+| `create-module.md`           | Python          |
+| `create-dataclass.md`        | Python          |
+| `create-monobehaviour.md`    | Unity           |
+| `create-scriptableobject.md` | Unity           |
+| `unity-architecture.md`      | Unity           |
 
 ### PR Checklist (Copilot + Cursor)
 
