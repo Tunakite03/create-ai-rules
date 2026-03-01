@@ -7,6 +7,7 @@ import { templatesCursor } from './cursor.js';
 import { templatesWindsurf } from './windsurf.js';
 import { templatesClaude } from './claude.js';
 import { templatesCline } from './cline.js';
+import { templatesAntigravity } from './antigravity.js';
 import { templatesGeneric } from './generic.js';
 
 export const TARGETS = [
@@ -39,6 +40,12 @@ export const TARGETS = [
       label: 'Cline',
       desc: '.clinerules',
       gen: (cfg) => templatesCline(cfg),
+   },
+   {
+      key: 'antigravity',
+      label: 'Antigravity',
+      desc: '.agent/rules/ + workflows/',
+      gen: (cfg) => templatesAntigravity(cfg),
    },
    {
       key: 'generic',

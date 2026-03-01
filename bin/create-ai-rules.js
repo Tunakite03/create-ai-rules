@@ -58,6 +58,7 @@ if (opts.help) {
     Windsurf         .windsurfrules
     Claude Code      CLAUDE.md
     Cline            .clinerules
+    Antigravity      .agent/rules/ + workflows/
     Generic          AGENTS.md
 
   ${bold('Stacks')}

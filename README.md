@@ -2,7 +2,7 @@
 
 > Scaffold AI coding rules, prompts & skills for your IDE assistants in seconds.
 
-One command to generate well-structured rule files for **GitHub Copilot**, **Cursor**, **Windsurf**, **Claude Code**, **Cline**, and more.
+One command to generate well-structured rule files for **GitHub Copilot**, **Cursor**, **Windsurf**, **Claude Code**, **Cline**, **Antigravity**, and more.
 
 ## Why?
 
@@ -32,6 +32,7 @@ No install required — just `npx` and go.
 | **Windsurf**         | `.windsurfrules`                                                             |
 | **Claude Code**      | `CLAUDE.md`                                                                  |
 | **Cline**            | `.clinerules`                                                                |
+| **Antigravity**      | `.agent/rules/ai-rules.md` + `.agent/workflows/`                             |
 | **Generic / Agents** | `AGENTS.md`                                                                  |
 
 ## Supported Stacks
@@ -82,6 +83,7 @@ $ npx create-ai-rules
       ◯ Windsurf  .windsurfrules
       ◯ Claude Code  CLAUDE.md
       ◯ Cline  .clinerules
+      ◯ Antigravity  .agent/rules/ + workflows/
       ◯ Generic / Agents  AGENTS.md
 
   ✔ GitHub Copilot, Cursor
