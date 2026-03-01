@@ -114,6 +114,12 @@ When implementing changes, always provide:
 - Lazy loading: \`React.lazy()\` + \`Suspense\` for route-level code splitting.
 - Forms: use controlled components. Validate on blur + submit.
 - Avoid prop drilling > 2 levels. Use context or composition instead.
+- Performance:
+  - Memoize expensive child components (\`React.memo\`) when parent re-renders frequently.
+  - Use virtualization (\`react-window\` / \`react-virtuoso\`) for long lists to prevent DOM bloat.
+  - Avoid creating anonymous objects/functions in render for props passed to memoized children.
+  - Keep React Context flat. Deep context causes widespread re-renders. Use Zustand/Jotai for atomic state.
+  - Use \`useTransition\` or \`useDeferredValue\` for non-blocking state updates (e.g., search filtering).
 - Follow docs/ui-style-guide.md strictly.
 - Do not hardcode colors; use semantic Tailwind tokens.
 - Use rounded-lg as default radius.
@@ -142,6 +148,12 @@ When implementing changes, always provide:
 - Health check endpoint: \`GET /health\` returning \`{ status: "ok" }\`.
 - Pagination: cursor-based preferred, offset-based acceptable.
 - Idempotency: POST/PUT endpoints should be safely retryable.
+- Performance:
+  - Offload heavy CPU tasks (e.g., image processing) to Worker Threads or a background queue (BullMQ).
+  - Use Streams (\`stream.pipeline\`) instead of buffering large files in memory.
+  - Run independent async operations concurrently using \`Promise.all()\`.
+  - Avoid synchronous blocking operations (\`readFileSync\`, \`JSON.parse\` on huge payloads).
+  - Configure database connection pooling with max/min pool sizes tuned to your infrastructure.
 `;
 
    const python = `
@@ -170,6 +182,12 @@ When implementing changes, always provide:
 - f-strings for string formatting (not \`.format()\` or \`%\`).
 - Use \`Enum\` for fixed sets of values.
 - Docstrings: Google style or NumPy style, be consistent.
+- Performance:
+  - Use generators/yield instead of returning massive lists to save memory.
+  - Use \`orjson\` or \`ujson\` instead of the standard \`json\` module for high-throughput APIs.
+  - Profile before optimizing using \`cProfile\` or \`line_profiler\`.
+  - Use vectorized operations (\`numpy\`, \`pandas\`) instead of native Python loops for large datasets.
+  - Avoid excessive string concatenation in loops (\`str += msg\`); use \`''.join(list)\` instead.
 `;
 
    const unity = `
@@ -184,10 +202,13 @@ When implementing changes, always provide:
 - Performance:
   - Cache every \`GetComponent<T>()\` call in \`Awake\`/\`Start\` — never in \`Update\`.
   - Never call \`FindObjectOfType\`, \`GameObject.Find\`, or \`Camera.main\` in \`Update\`.
-  - Use **object pooling** for frequently spawned/destroyed objects.
+  - Use **object pooling** for frequently spawned/destroyed objects (\`IObjectPool\`).
   - Avoid LINQ in hot paths (allocates garbage). Use for-loops instead.
-  - Minimize allocations inside \`Update\` — no \`new\`, no string concatenation.
+  - Minimize allocations inside \`Update\` — no \`new\`, no string concatenation, use \`StringBuilder\`.
   - Use \`WaitForSeconds\` cached instance in coroutines (not \`new WaitForSeconds()\` every frame).
+  - Prefer \`ScriptableObjects\` over parsing raw JSON/XML at runtime.
+  - Use \`Addressables\` to manage memory footprint dynamically instead of loading everything via \`Resources\`.
+  - Use value types (\`struct\`) and \`[StructLayout]\` for hot-path data to minimize Garbage Collection stalls.
 - Physics:
   - All physics/Rigidbody movement must happen in \`FixedUpdate\`.
   - Use layers and \`LayerMask\` for collision filtering — never string-based layer lookup.

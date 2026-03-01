@@ -192,6 +192,7 @@ export const <Name>: FC<<Name>Props> = ({ /* props */ }) => {
 - [ ] Accessible: alt text on images, labels on inputs, aria where needed.
 - [ ] Colors only via Tailwind semantic tokens (no hardcoded hex).
 - [ ] Tested: renders without crash, key interactions covered.
+- [ ] Performance: Large lists are virtualized, expensive children are memoized.
 `;
 
       files['.github/skills/create-hook.md'] = `# Skill: Create a Custom React Hook
@@ -234,6 +235,7 @@ export function use<Name>(options: Use<Name>Options): Use<Name>Return {
 - [ ] Cleanup in useEffect return for subscriptions/timers.
 - [ ] No direct DOM manipulation — use refs when needed.
 - [ ] Unit tested in isolation with \`renderHook\`.
+- [ ] Performance: State updates are batched/deferred if they cause heavy renders.
 `;
 
       files['.github/skills/create-page.md'] = `# Skill: Create a Next.js Page / Route
@@ -271,6 +273,7 @@ export default async function <Name>Page({ params, searchParams }: PageProps) {
 - [ ] Error state: \`error.tsx\` sibling file.
 - [ ] Route params typed via \`PageProps\`.
 - [ ] Page container uses \`container mx-auto px-4 md:px-6\`.
+- [ ] Performance: Heavy client components are dynamically imported (\`next/dynamic\`).
 `;
    }
 
@@ -312,6 +315,7 @@ export default router;
 - [ ] Auth middleware applied where required.
 - [ ] Response shape consistent with rest of API.
 - [ ] Integration test added for happy path + error cases.
+- [ ] Performance: DB calls are concurrent (\`Promise.all\`), no sync blocking calls.
 `;
 
       files['.github/skills/create-middleware.md'] = `# Skill: Create Express Middleware
@@ -399,6 +403,7 @@ def <function_name>(param: <Type>) -> <ReturnType>:
 - [ ] No mutable default arguments (\`def f(x=[]):\` is a bug).
 - [ ] \`__all__\` list defined to control public API.
 - [ ] Corresponding \`test_<module>.py\` created.
+- [ ] Performance: Uses generators/yield for large sequences instead of lists.
 `;
 
       files['.github/skills/create-dataclass.md'] = `# Skill: Create a Pydantic Model / Dataclass
@@ -767,6 +772,7 @@ public sealed class <Name> : MonoBehaviour
 - [ ] \`[Header]\`, \`[Tooltip]\` on all serialized fields.
 - [ ] \`[RequireComponent]\` for hard dependencies.
 - [ ] Class is \`sealed\` unless inheritance is needed.
+- [ ] Performance: Zero allocations (no \`new\`) in \`Update\` or \`FixedUpdate\`.
 `;
 
       files['.github/skills/create-scriptableobject.md'] = `# Skill: Create a ScriptableObject
