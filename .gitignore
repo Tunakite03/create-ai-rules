@@ -1,0 +1,14 @@
+node_modules/
+.DS_Store
+Thumbs.db
+*.log
+npm-debug.log*
+
+# Test output
+test-output/
+.github/
+.cursor/
+.windsurfrules
+.clinerules
+CLAUDE.md
+AGENTS.md

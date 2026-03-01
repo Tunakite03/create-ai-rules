@@ -1,0 +1,38 @@
+{
+  "name": "create-ai-rules",
+  "version": "1.0.0",
+  "description": "CLI to scaffold AI coding rules & instructions for GitHub Copilot, Cursor, Claude Code, Windsurf, Cline and more",
+  "type": "module",
+  "bin": {
+    "create-ai-rules": "bin/create-ai-rules.js"
+  },
+  "files": [
+    "bin/"
+  ],
+  "scripts": {
+    "test": "node bin/create-ai-rules.js --help"
+  },
+  "keywords": [
+    "ai",
+    "rules",
+    "copilot",
+    "cursor",
+    "claude",
+    "windsurf",
+    "cline",
+    "scaffold",
+    "cli",
+    "ide",
+    "instructions",
+    "coding-assistant"
+  ],
+  "author": "",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": ""
+  },
+  "engines": {
+    "node": ">=18"
+  }
+}
