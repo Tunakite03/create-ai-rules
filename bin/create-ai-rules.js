@@ -425,11 +425,50 @@ When implementing changes, always provide:
 - Docstrings: Google style or NumPy style, be consistent.
 `;
 
+   const unity = `
+## Unity / C#
+- Naming:
+  - Methods, Properties, Classes: \`PascalCase\`.
+  - Private fields: \`_camelCase\`. Serialized private fields: \`[SerializeField] private Type _fieldName\`.
+  - Constants: \`UPPER_SNAKE_CASE\`.
+- MonoBehaviour lifecycle order: \`Awake\` → \`OnEnable\` → \`Start\` → \`FixedUpdate\` → \`Update\` → \`LateUpdate\` → \`OnDisable\` → \`OnDestroy\`.
+  - Init dependencies in \`Awake\`, subscribe events in \`OnEnable\`, unsubscribe in \`OnDisable\`.
+  - Never call heavy logic in \`Update\` that can be event-driven.
+- Performance:
+  - Cache every \`GetComponent<T>()\` call in \`Awake\`/\`Start\` — never in \`Update\`.
+  - Never call \`FindObjectOfType\`, \`GameObject.Find\`, or \`Camera.main\` in \`Update\`.
+  - Use **object pooling** for frequently spawned/destroyed objects.
+  - Avoid LINQ in hot paths (allocates garbage). Use for-loops instead.
+  - Minimize allocations inside \`Update\` — no \`new\`, no string concatenation.
+  - Use \`WaitForSeconds\` cached instance in coroutines (not \`new WaitForSeconds()\` every frame).
+- Physics:
+  - All physics/Rigidbody movement must happen in \`FixedUpdate\`.
+  - Use layers and \`LayerMask\` for collision filtering — never string-based layer lookup.
+  - Prefer \`Rigidbody.MovePosition\` / \`MoveRotation\` over modifying \`transform\` directly on physics objects.
+- Coroutines vs async:
+  - Prefer coroutines for simple timed sequences.
+  - Use \`async/await\` with \`UniTask\` (if available) for complex async flows.
+  - Always stop coroutines in \`OnDisable\` / \`OnDestroy\`.
+- Architecture:
+  - Use \`ScriptableObject\` for shared data and configuration.
+  - Prefer composition over inheritance. Avoid deep MonoBehaviour hierarchies.
+  - Use events / UnityEvent / delegates to decouple components — avoid direct GetComponent calls across unrelated objects.
+  - Use \`[RequireComponent(typeof(T))]\` to enforce hard dependencies.
+- Scenes & Prefabs:
+  - Keep prefabs self-contained. Avoid prefabs that depend on scene-specific objects.
+  - Use \`Addressables\` or \`Resources.Load\` for dynamic asset loading — not hard references.
+- Editor:
+  - Use \`[Header]\`, \`[Tooltip]\`, \`[Space]\` for Inspector clarity.
+  - Never use \`#if UNITY_EDITOR\` blocks inside runtime logic — put editor code in \`Editor/\` folders.
+  - Custom editors and property drawers go in \`Assets/Editor/\`.
+`;
+
    const stackMap = {
       ts: common + ts,
       react: common + ts + react,
       node: common + ts + nodeApi,
       python: common + python,
+      unity: common + unity,
    };
 
    return stackMap[stack] || common + ts;
@@ -485,6 +524,48 @@ applyTo: "**"
 - If a design system (Tailwind, shadcn, MUI, etc.) is in use, use ONLY its tokens/classes.
 - Before changing any visual property, ask: "Does this match the existing theme?"
 `;
+
+   // Unity-specific instruction file
+   if (stack === 'unity') {
+      files['.github/instructions/05-unity.instructions.md'] = `---
+applyTo: "**/*.cs"
+---
+# Unity / C# Rules
+
+## Lifecycle
+- Init dependencies: \`Awake\`. Subscribe events: \`OnEnable\`. Unsubscribe: \`OnDisable\`.
+- Physics / Rigidbody movement: \`FixedUpdate\` only.
+- Never put heavy logic in \`Update\` that can be event-driven.
+
+## Performance — Hot Path Rules
+- Cache \`GetComponent<T>()\` in \`Awake\`/\`Start\`. NEVER in \`Update\`.
+- Never call \`FindObjectOfType\`, \`GameObject.Find\`, or \`Camera.main\` in \`Update\`.
+- Use object pooling for frequently spawned/destroyed objects.
+- No LINQ in \`Update\` / \`FixedUpdate\` — use for-loops to avoid GC allocations.
+- No \`new\`, no string concatenation inside hot loops.
+- Cache \`WaitForSeconds\` — do not \`new WaitForSeconds()\` every coroutine iteration.
+
+## Architecture
+- Use \`ScriptableObject\` for shared config/data.
+- Decouple with events (C# events / UnityEvent / delegates). Avoid cross-object \`GetComponent\` chains.
+- \`[RequireComponent(typeof(T))]\` to enforce hard dependencies.
+- Prefer composition over MonoBehaviour inheritance.
+
+## Naming
+- Methods, Properties, Classes: \`PascalCase\`.
+- Private fields: \`_camelCase\`. Serialized private fields: \`[SerializeField]\`.
+- Constants: \`UPPER_SNAKE_CASE\`.
+
+## Prefabs & Assets
+- Prefabs must be self-contained (no direct scene-object references).
+- Dynamic loading: \`Addressables\` or \`Resources.Load\` — not serialized hard refs.
+
+## Editor Code
+- All editor scripts inside \`Assets/Editor/\`.
+- Use \`[Header]\`, \`[Tooltip]\`, \`[Space]\` for Inspector clarity.
+- No \`#if UNITY_EDITOR\` inside runtime MonoBehaviour logic.
+`;
+   }
 
    // Tailwind + shadcn/ui style guide for React stack
    if (stack === 'react') {
@@ -970,6 +1051,47 @@ alwaysApply: true
 - If a design system is in use, use ONLY its tokens/classes.
 `;
 
+   // Unity-specific Cursor rules
+   if (stack === 'unity') {
+      files['.cursor/rules/unity.mdc'] = [
+         '---',
+         'description: Unity C# patterns and performance rules',
+         'globs: "**/*.cs"',
+         'alwaysApply: true',
+         '---',
+         '# Unity / C# Rules',
+         '',
+         '## Lifecycle',
+         '- Awake: init/cache. OnEnable: subscribe. OnDisable: unsubscribe. FixedUpdate: physics.',
+         '- Never run heavy logic in Update that can be event-driven.',
+         '',
+         '## Performance',
+         '- Cache GetComponent<T>() in Awake/Start — NEVER in Update.',
+         '- No FindObjectOfType / GameObject.Find / Camera.main in Update.',
+         '- Object pooling for frequently spawned objects.',
+         '- No LINQ in hot loops — use for-loops to avoid GC.',
+         '- No `new` allocations inside Update/FixedUpdate.',
+         '- Cache WaitForSeconds instances.',
+         '',
+         '## Architecture',
+         '- ScriptableObject for shared data/config.',
+         '- Decouple with C# events / UnityEvent / delegates.',
+         '- [RequireComponent] to enforce hard dependencies.',
+         '- Composition over MonoBehaviour inheritance.',
+         '',
+         '## Naming',
+         '- Methods/Properties/Classes: PascalCase.',
+         '- Private fields: _camelCase. Serialized: [SerializeField] private Type _field.',
+         '- Constants: UPPER_SNAKE_CASE.',
+         '',
+         '## Editor Code',
+         '- All editor scripts in Assets/Editor/.',
+         '- Use [Header], [Tooltip], [Space] for Inspector UX.',
+         '- No #if UNITY_EDITOR inside runtime MonoBehaviour logic.',
+         '',
+      ].join('\n');
+   }
+
    // Tailwind + shadcn style guide for React stack
    if (stack === 'react') {
       files['.cursor/rules/ui-style.mdc'] = [
@@ -1254,6 +1376,7 @@ const STACKS = [
    { key: 'react', label: 'React / Next.js' },
    { key: 'node', label: 'Node.js API' },
    { key: 'python', label: 'Python' },
+   { key: 'unity', label: 'Unity (C#)' },
 ];
 
 // ================================================================
