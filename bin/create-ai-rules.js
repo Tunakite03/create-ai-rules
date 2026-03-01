@@ -107,7 +107,10 @@ async function selectOne(question, items, defaultIdx = 0) {
       process.stdin.setEncoding('utf8');
 
       const onData = (key) => {
-         if (key === '\x03') { cleanup(); process.exit(0); }
+         if (key === '\x03') {
+            cleanup();
+            process.exit(0);
+         }
          // Up: ANSI or Windows raw \xe0H
          if (key === '\x1B[A' || key === '\xe0H' || key === '\x00H') {
             cursor = (cursor - 1 + count) % count;
@@ -171,7 +174,10 @@ async function selectMulti(question, items) {
       process.stdin.setEncoding('utf8');
 
       const onData = (key) => {
-         if (key === '\x03') { cleanup(); process.exit(0); }
+         if (key === '\x03') {
+            cleanup();
+            process.exit(0);
+         }
          // Up: ANSI or Windows raw \xe0H
          if (key === '\x1B[A' || key === '\xe0H' || key === '\x00H') {
             cursor = (cursor - 1 + count) % count;
@@ -198,7 +204,9 @@ async function selectMulti(question, items) {
             if (selected.size === 0) {
                // Show hint without clearing the list
                process.stdout.write(`\x1B[${count + 1}A`);
-               process.stdout.write(`\n${bold(question)}  ${yellow('← press Space to select an item first')}\x1B[0K\n\n`);
+               process.stdout.write(
+                  `\n${bold(question)}  ${yellow('← press Space to select an item first')}\x1B[0K\n\n`,
+               );
                render(false);
                return;
             }
