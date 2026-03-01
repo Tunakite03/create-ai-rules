@@ -12,13 +12,28 @@ const pkg = JSON.parse(await fs.readFile(path.join(__dirname, '..', 'package.jso
 const argv = process.argv.slice(2);
 const FLAGS = new Set(argv.filter((a) => a.startsWith('-')));
 
+// Parse --stack=<name> from argv
+const stackArg = argv.find((a) => a.startsWith('--stack='));
+const stackValue = stackArg ? stackArg.split('=')[1] : null;
+
 const opts = {
    yes: FLAGS.has('--yes') || FLAGS.has('-y'),
    force: FLAGS.has('--force') || FLAGS.has('-f'),
    minimal: FLAGS.has('--minimal'),
    help: FLAGS.has('--help') || FLAGS.has('-h'),
    version: FLAGS.has('--version') || FLAGS.has('-v'),
+   stack: stackValue,
 };
+
+// Detect non-TTY / piped output — strip ANSI codes
+const NO_COLOR = !process.stdout.isTTY || process.env.NO_COLOR !== undefined;
+
+// --- ANSI helpers (respects NO_COLOR / non-TTY) ---
+const ansi = (code) => (s) => NO_COLOR ? s : `\x1b[${code}m${s}\x1b[0m`;
+function bold(s) { return ansi('1')(s); }
+function green(s) { return ansi('32')(s); }
+function yellow(s) { return ansi('33')(s); }
+function dim(s) { return ansi('2')(s); }
 
 // --- Help & Version ---
 if (opts.version) {
@@ -36,19 +51,27 @@ if (opts.help) {
     npx create-ai-rules -y       Quick defaults (Copilot + Generic, TypeScript)
 
   ${bold('Flags')}
-    -y, --yes       Accept defaults (Copilot + Generic, TypeScript stack)
-    -f, --force     Overwrite existing files
-    --minimal       Skip optional files (prompts, skills, conventions)
-    -h, --help      Show this help
-    -v, --version   Show version
+    -y, --yes           Accept defaults (Copilot + Generic, TypeScript stack)
+    -f, --force         Overwrite existing files
+    --stack=<name>      Set stack: ts, react, node, python, unity (with -y)
+    --minimal           Skip optional files (prompts, skills, extras)
+    -h, --help          Show this help
+    -v, --version       Show version
 
   ${bold('Supported targets')}
     GitHub Copilot   .github/ (instructions + prompts + skills)
-    Cursor           .cursor/rules/*.mdc
+    Cursor           .cursor/rules/*.mdc + skills/
     Windsurf         .windsurfrules
     Claude Code      CLAUDE.md
     Cline            .clinerules
     Generic          AGENTS.md
+
+  ${bold('Stacks')}
+    ts               TypeScript (generic) — default
+    react            React / Next.js
+    node             Node.js API
+    python           Python
+    unity            Unity (C#)
 
   ${bold('Interactive navigation')}
     ↑/↓   Move cursor
@@ -57,20 +80,6 @@ if (opts.help) {
     Enter  Confirm
 `);
    process.exit(0);
-}
-
-// --- ANSI helpers ---
-function bold(s) {
-   return `\x1b[1m${s}\x1b[0m`;
-}
-function green(s) {
-   return `\x1b[32m${s}\x1b[0m`;
-}
-function yellow(s) {
-   return `\x1b[33m${s}\x1b[0m`;
-}
-function dim(s) {
-   return `\x1b[2m${s}\x1b[0m`;
 }
 
 // --- Arrow-key interactive selectors ---
@@ -1820,6 +1829,28 @@ alwaysApply: false
 `;
    }
 
+   // --- PR Checklist ---
+   files['.cursor/rules/pr-checklist.mdc'] = `---
+description: Pull request quality checklist
+globs:
+alwaysApply: false
+---
+# PR Checklist
+
+## Before Submitting
+- [ ] Code compiles with zero warnings.
+- [ ] All existing tests pass.
+- [ ] New code has tests (happy path + edge cases + errors).
+- [ ] Minimal diff — only changes needed for the task.
+- [ ] No debug logs, console.log, commented-out code.
+- [ ] No hardcoded secrets, tokens, or credentials.
+- [ ] Typed errors (no raw string throws).
+- [ ] Inputs validated at boundaries.
+- [ ] Accessible: labels, alt text, keyboard nav where applicable.
+- [ ] Breaking changes documented.
+- [ ] PR description explains WHY, not just WHAT.
+`;
+
    // --- Skills (remapped to .cursor/skills/) ---
    if (!minimal) {
       const skills = buildSkills({ stack });
@@ -1832,11 +1863,12 @@ alwaysApply: false
 }
 
 // --- Windsurf (comprehensive) ---
-function templatesWindsurf({ stack }) {
-   return {
-      '.windsurfrules':
-         baseRules({ stack }) +
-         `
+function templatesWindsurf({ stack, minimal }) {
+   const files = {};
+
+   files['.windsurfrules'] =
+      baseRules({ stack }) +
+      `
 ## Windsurf-Specific Behavior
 
 ### Workflow
@@ -1855,16 +1887,25 @@ function templatesWindsurf({ stack }) {
 - Explain your reasoning before showing code.
 - When multiple approaches exist, briefly list trade-offs.
 - Flag potential risks or side effects proactively.
-`,
-   };
+`;
+
+   if (!minimal) {
+      const skills = buildSkills({ stack });
+      for (const [k, v] of Object.entries(skills)) {
+         files[k.replace('.github/skills/', '.windsurf/skills/')] = v;
+      }
+   }
+
+   return files;
 }
 
 // --- Claude Code (comprehensive) ---
-function templatesClaude({ stack }) {
-   return {
-      'CLAUDE.md':
-         baseRules({ stack }) +
-         `
+function templatesClaude({ stack, minimal }) {
+   const files = {};
+
+   files['CLAUDE.md'] =
+      baseRules({ stack }) +
+      `
 ## Claude Code Behavior
 
 ### Before Writing Code
@@ -1890,16 +1931,25 @@ function templatesClaude({ stack }) {
 - Show code changes with file paths.
 - Explain non-obvious decisions.
 - When uncertain, say so and explain your reasoning.
-`,
-   };
+`;
+
+   if (!minimal) {
+      const skills = buildSkills({ stack });
+      for (const [k, v] of Object.entries(skills)) {
+         files[k.replace('.github/', '.claude/')] = v;
+      }
+   }
+
+   return files;
 }
 
 // --- Cline (comprehensive) ---
-function templatesCline({ stack }) {
-   return {
-      '.clinerules':
-         baseRules({ stack }) +
-         `
+function templatesCline({ stack, minimal }) {
+   const files = {};
+
+   files['.clinerules'] =
+      baseRules({ stack }) +
+      `
 ## Cline-Specific Behavior
 
 ### Workflow
@@ -1924,8 +1974,16 @@ function templatesCline({ stack }) {
 - Explain each significant change as you make it.
 - Summarize all changes when done.
 - Flag any concerns or follow-up items.
-`,
-   };
+`;
+
+   if (!minimal) {
+      const skills = buildSkills({ stack });
+      for (const [k, v] of Object.entries(skills)) {
+         files[k.replace('.github/skills/', '.cline/skills/')] = v;
+      }
+   }
+
+   return files;
 }
 
 // --- Generic / Agents (comprehensive) ---
@@ -2022,8 +2080,13 @@ async function main() {
 
    if (opts.yes) {
       selectedTargets = ['copilot', 'generic'];
-      stack = 'ts';
-      console.log(dim('\nUsing defaults: Copilot + Generic, TypeScript stack.\n'));
+      // --stack=<name> overrides the default
+      const validStacks = STACKS.map((s) => s.key);
+      if (opts.stack && validStacks.includes(opts.stack)) {
+         stack = opts.stack;
+      }
+      const stackLabel = STACKS.find((s) => s.key === stack)?.label ?? stack;
+      console.log(dim(`\nUsing defaults: Copilot + Generic, ${stackLabel} stack.\n`));
    } else {
       // -- 1. Select targets --
       const chosenTargets = await selectMulti('1. Select targets', TARGETS);

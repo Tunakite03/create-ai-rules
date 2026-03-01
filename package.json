@@ -1,6 +1,6 @@
 {
    "name": "create-ai-rules",
-   "version": "1.4.0",
+   "version": "1.5.0",
    "description": "CLI to scaffold AI coding rules & instructions for GitHub Copilot, Cursor, Claude Code, Windsurf, Cline and more",
    "type": "module",
    "bin": {
@@ -26,11 +26,15 @@
       "instructions",
       "coding-assistant"
    ],
-   "author": "",
+   "author": "Tunakite03",
    "license": "MIT",
+   "homepage": "https://github.com/Tunakite03/create-ai-rules#readme",
    "repository": {
       "type": "git",
-      "url": ""
+      "url": "git+https://github.com/Tunakite03/create-ai-rules.git"
+   },
+   "bugs": {
+      "url": "https://github.com/Tunakite03/create-ai-rules/issues"
    },
    "engines": {
       "node": ">=18"

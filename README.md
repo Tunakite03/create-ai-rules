@@ -1,6 +1,6 @@
 # create-ai-rules
 
-> Scaffold AI coding rules & instructions for your IDE assistants in seconds.
+> Scaffold AI coding rules, prompts & skills for your IDE assistants in seconds.
 
 One command to generate well-structured rule files for **GitHub Copilot**, **Cursor**, **Windsurf**, **Claude Code**, **Cline**, and more.
 
@@ -11,43 +11,60 @@ AI coding assistants work better when they understand your project's conventions
 ## Quick Start
 
 ```bash
-# Interactive mode
+# Interactive mode (arrow-key navigation)
 npx create-ai-rules
 
 # Quick defaults (Copilot + Generic, TypeScript)
 npx create-ai-rules -y
+
+# Non-interactive with specific stack
+npx create-ai-rules -y --stack=react
 ```
 
 No install required — just `npx` and go.
 
 ## Supported Targets
 
-| #   | Target               | Files Generated                                                                                              |
-| --- | -------------------- | ------------------------------------------------------------------------------------------------------------ |
-| 1   | **GitHub Copilot**   | `.github/copilot-instructions.md` + `.github/instructions/*.instructions.md` + `.github/prompts/*.prompt.md` |
-| 2   | **Cursor**           | `.cursor/rules/*.mdc`                                                                                        |
-| 3   | **Windsurf**         | `.windsurfrules`                                                                                             |
-| 4   | **Claude Code**      | `CLAUDE.md`                                                                                                  |
-| 5   | **Cline**            | `.clinerules`                                                                                                |
-| 6   | **Generic / Agents** | `AGENTS.md`                                                                                                  |
+| Target               | Files Generated |
+| -------------------- | --------------- |
+| **GitHub Copilot**   | `.github/copilot-instructions.md` + `instructions/` + `prompts/` + `skills/` |
+| **Cursor**           | `.cursor/rules/*.mdc` + `.cursor/skills/` |
+| **Windsurf**         | `.windsurfrules` |
+| **Claude Code**      | `CLAUDE.md` |
+| **Cline**            | `.clinerules` |
+| **Generic / Agents** | `AGENTS.md` |
 
 ## Supported Stacks
 
-| #   | Stack                |
-| --- | -------------------- |
-| 1   | TypeScript (generic) |
-| 2   | React / Next.js      |
-| 3   | Node.js API          |
-| 4   | Python               |
+| Stack | Includes |
+| ----- | -------- |
+| **TypeScript** (generic) | TS strict mode, type patterns, barrel exports |
+| **React / Next.js** | Hooks, a11y, Tailwind + shadcn/ui style guide, component skills |
+| **Node.js API** | Zod validation, middleware, structured errors, graceful shutdown |
+| **Python** | Type hints, PEP 8, Pydantic, asyncio, pytest |
+| **Unity (C#)** | MonoBehaviour lifecycle, performance, ScriptableObject, architecture |
 
 ## CLI Flags
 
 ```
--y, --yes       Accept defaults (Copilot + Generic, TypeScript stack)
--f, --force     Overwrite existing files
---minimal       Skip optional files (prompts, conventions doc)
--h, --help      Show help
--v, --version   Show version
+-y, --yes           Accept defaults (Copilot + Generic, TypeScript)
+-f, --force         Overwrite existing files
+--stack=<name>      Set stack: ts, react, node, python, unity (used with -y)
+--minimal           Skip optional files (prompts, skills, extras)
+-h, --help          Show help
+-v, --version       Show version
+```
+
+## Interactive Navigation
+
+The CLI uses arrow-key navigation — no typing numbers:
+
+```
+↑ / ↓     Move cursor
+Space     Toggle selection (multi-select)
+A         Select / deselect all
+Enter     Confirm
+Ctrl+C    Exit
 ```
 
 ## Example
@@ -55,33 +72,40 @@ No install required — just `npx` and go.
 ```bash
 $ npx create-ai-rules
 
-  create-ai-rules v1.1.0
+  create-ai-rules v1.5.0
   Scaffold AI coding rules for your IDE assistants.
 
-  1. Select targets (comma-separated, e.g. 1,2,3 or 'all')
+  1. Select targets  ↑↓ · Space select · A = all · Enter confirm
 
-     1) GitHub Copilot   .github/copilot-instructions.md + .github/instructions/*
-     2) Cursor           .cursor/rules/*.mdc
-     3) Windsurf         .windsurfrules
-     4) Claude Code      CLAUDE.md
-     5) Cline            .clinerules
-     6) Generic / Agents AGENTS.md
+    ❯ ◉ GitHub Copilot  .github/ (instructions + prompts + skills)
+      ◉ Cursor  .cursor/rules/*.mdc + skills/
+      ◯ Windsurf  .windsurfrules
+      ◯ Claude Code  CLAUDE.md
+      ◯ Cline  .clinerules
+      ◯ Generic / Agents  AGENTS.md
 
-  Your choice: 1,2
+  ✔ GitHub Copilot, Cursor
 
-  2. Select tech stack
+  2. Select tech stack  ↑↓ · Enter
 
-     1) TypeScript (generic)
-     2) React / Next.js
-     3) Node.js API
-     4) Python
+    ❯ TypeScript (generic)
+      React / Next.js
+      Node.js API
+      Python
+      Unity (C#)
 
-  Your choice [1]: 2
+  ✔ React / Next.js
 
-  Minimal mode? (skip prompts & extras) [y/N]: n
+  3. Minimal mode?  ↑↓ · Enter
+
+    ❯ No  — include prompts, skills & extras
+      Yes — core rule files only
+
+  ✔ No  — include prompts, skills & extras
 
   + .github/copilot-instructions.md
   + .github/instructions/00-style.instructions.md
+  + .github/instructions/05-ui-style.instructions.md
   + .github/instructions/10-typescript.instructions.md
   + .github/instructions/20-error-handling.instructions.md
   + .github/instructions/30-security.instructions.md
@@ -94,51 +118,88 @@ $ npx create-ai-rules
   + .github/prompts/code-review.prompt.md
   + .github/prompts/write-tests.prompt.md
   + .github/prompts/explain-code.prompt.md
+  + .github/skills/git-workflow.md
+  + .github/skills/debug.md
+  + .github/skills/create-service.md
+  + .github/skills/create-types.md
+  + .github/skills/create-component.md
+  + .github/skills/create-hook.md
+  + .github/skills/create-page.md
   + .cursor/rules/base.mdc
   + .cursor/rules/style.mdc
+  + .cursor/rules/ui-style.mdc
   + .cursor/rules/error-handling.mdc
   + .cursor/rules/security.mdc
+  + .cursor/rules/pr-checklist.mdc
   + .cursor/rules/testing.mdc
   + .cursor/rules/performance.mdc
+  + .cursor/skills/git-workflow.md
+  + .cursor/skills/debug.md
+  + .cursor/skills/create-service.md
+  + .cursor/skills/create-types.md
+  + .cursor/skills/create-component.md
+  + .cursor/skills/create-hook.md
+  + .cursor/skills/create-page.md
 
-  Done! 20 written, 0 skipped.
-
-  Next steps:
-    1. Review & customize the generated rule files.
-    2. Commit them to your repo.
-    3. Your IDE assistant will pick them up automatically.
+  Done! 37 written, 0 skipped.
 ```
 
 ## What's Generated?
 
-Comprehensive, production-grade rules covering:
+### Rules (all targets)
 
-### Core Rules (all targets)
-
-- **AI Behavior** — read before write, plan before code, minimal diffs
-- **Code Quality** — small functions, explicit naming, early returns, pure functions
-- **Error Handling** — typed errors, actionable messages, boundary validation
-- **Security** — no hardcoded secrets, input sanitization, parameterized queries
-- **Performance** — avoid N+1, pagination, lazy loading, streaming
-- **Git** — conventional commits, minimal diffs, single logical unit per change
+| Category | What it covers |
+|----------|---------------|
+| **AI Behavior** | Read before write, plan before code, minimal diffs |
+| **Code Quality** | Small functions, explicit naming, early returns, pure functions |
+| **Error Handling** | Typed errors, actionable messages, boundary validation |
+| **Security** | No hardcoded secrets, input sanitization, parameterized queries |
+| **Performance** | Avoid N+1, pagination, lazy loading, streaming |
+| **Git** | Conventional commits, minimal diffs, single logical unit per change |
+| **UI Theme** | Never change colors/themes unless asked, use design tokens |
 
 ### Stack-Specific Rules
 
-- **TypeScript** — strict mode, `unknown` over `any`, discriminated unions, `satisfies`, `as const`
-- **React** — hooks patterns, a11y (WCAG AA), state management, error boundaries, lazy loading
-- **Node/API** — Zod validation, structured errors, middleware patterns, graceful shutdown
-- **Python** — type hints, PEP 8, dataclasses/Pydantic, `asyncio`, pytest
+| Stack | Key rules |
+|-------|-----------|
+| **TypeScript** | `strict: true`, `unknown` over `any`, discriminated unions, `satisfies`, `as const` |
+| **React** | Hooks patterns, a11y (WCAG AA), state management, error boundaries, Tailwind + shadcn/ui style guide |
+| **Node/API** | Zod validation, structured errors, middleware patterns, graceful shutdown, health checks |
+| **Python** | Type hints, PEP 8, dataclasses/Pydantic, `asyncio`, pytest |
+| **Unity** | MonoBehaviour lifecycle, `GetComponent` caching, object pooling, `ScriptableObject`, physics in `FixedUpdate` |
 
-### Copilot Extras (7 instruction files + 6 prompt templates)
+### Prompts (Copilot)
 
-- **Instructions**: style, TypeScript, error handling, security, testing, performance, PR checklist
-- **Prompts**: implement feature, fix bug, refactor, code review, write tests, explain code
+6 detailed workflow templates: implement feature, fix bug, refactor, code review, write tests, explain code.
 
-### Cursor Extras (up to 6 `.mdc` rule files)
+### Skills (Copilot + Cursor)
 
-- Base rules, style, error handling, security, testing, performance
+Stack-aware task scaffolds with code templates and checklists:
 
-Files are safe by default — existing files are **skipped** unless you pass `--force`.
+| Skill | Stacks |
+|-------|--------|
+| `git-workflow.md` | All |
+| `debug.md` | All |
+| `create-service.md` | TS, React, Node |
+| `create-types.md` | TS, React, Node |
+| `create-component.md` | React |
+| `create-hook.md` | React |
+| `create-page.md` | React |
+| `create-endpoint.md` | Node |
+| `create-middleware.md` | Node |
+| `create-module.md` | Python |
+| `create-dataclass.md` | Python |
+| `create-monobehaviour.md` | Unity |
+| `create-scriptableobject.md` | Unity |
+| `unity-architecture.md` | Unity |
+
+### PR Checklist (Copilot + Cursor)
+
+Comprehensive checklist covering correctness, quality, safety, testing, and documentation.
+
+## Safe by Default
+
+Existing files are **skipped** unless you pass `--force`. Re-run anytime to add missing files.
 
 ## Global Install (optional)
 
@@ -151,7 +212,7 @@ create-ai-rules
 
 1. Fork the repo
 2. Create a feature branch
-3. Add your IDE target in `bin/create-ai-rules.js` (follow the existing pattern)
+3. Add your IDE target or stack in `bin/create-ai-rules.js` (follow existing patterns)
 4. Submit a PR
 
 ## License
