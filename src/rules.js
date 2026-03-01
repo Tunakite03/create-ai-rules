@@ -210,10 +210,72 @@ When implementing changes, always provide:
   - Custom editors and property drawers go in \`Assets/Editor/\`.
 `;
 
+   const nestjs = `
+## NestJS
+- Architecture:
+  - Follow modular architecture. Every feature = its own module.
+  - Module file structure: \`<feature>.module.ts\`, \`<feature>.controller.ts\`, \`<feature>.service.ts\`, \`<feature>.dto.ts\`, \`<feature>.entity.ts\`.
+  - Keep modules self-contained. Import/export only what is necessary.
+  - Use \`@Global()\` sparingly — only for truly app-wide modules (config, logging).
+- Controllers:
+  - Controllers handle HTTP only. No business logic — delegate to services.
+  - Use proper HTTP method decorators: \`@Get()\`, \`@Post()\`, \`@Put()\`, \`@Patch()\`, \`@Delete()\`.
+  - Use \`@Param()\`, \`@Query()\`, \`@Body()\` to extract request data — never access \`req\` directly.
+  - Always validate request bodies with DTOs + \`ValidationPipe\`.
+  - Return proper HTTP status codes: \`@HttpCode(HttpStatus.NO_CONTENT)\` for 204, etc.
+  - Use \`@ApiTags()\`, \`@ApiOperation()\`, \`@ApiResponse()\` for Swagger docs.
+- Services & Dependency Injection:
+  - All business logic lives in \`@Injectable()\` services.
+  - Inject dependencies via constructor. Never use \`ModuleRef\` unless absolutely necessary.
+  - Prefer constructor injection over property injection.
+  - Use custom providers (\`useFactory\`, \`useValue\`, \`useClass\`) for complex initialization.
+  - Scope: default singleton. Use \`Scope.REQUEST\` only when truly needed (it hurts performance).
+- DTOs & Validation:
+  - One DTO per operation: \`CreateUserDto\`, \`UpdateUserDto\`, \`UserResponseDto\`.
+  - Use \`class-validator\` decorators: \`@IsString()\`, \`@IsEmail()\`, \`@IsNotEmpty()\`, \`@MinLength()\`, etc.
+  - Use \`class-transformer\`: \`@Exclude()\`, \`@Expose()\`, \`@Transform()\` for response shaping.
+  - Use \`PartialType()\`, \`PickType()\`, \`OmitType()\`, \`IntersectionType()\` from \`@nestjs/mapped-types\`.
+  - Enable global \`ValidationPipe\` with \`whitelist: true\` and \`forbidNonWhitelisted: true\`.
+- Guards, Pipes, Interceptors, Filters:
+  - \`Guards\` for authorization (\`@UseGuards(AuthGuard)\`).
+  - \`Pipes\` for input transformation/validation (\`@UsePipes(ValidationPipe)\`).
+  - \`Interceptors\` for cross-cutting concerns (logging, caching, response mapping).
+  - \`Exception Filters\` for consistent error responses (\`@Catch()\`).
+  - Execution order: Middleware → Guards → Interceptors (before) → Pipes → Handler → Interceptors (after) → Filters (on error).
+- Database:
+  - Use TypeORM or Prisma. Follow the repository pattern.
+  - Entities in \`<feature>.entity.ts\`. Use \`@Entity()\`, \`@Column()\`, \`@PrimaryGeneratedColumn()\`.
+  - Use migrations for all schema changes. Never \`synchronize: true\` in production.
+  - Use transactions (\`QueryRunner\` or \`@Transaction()\`) for multi-step mutations.
+  - Use query builders for complex queries. Avoid raw SQL unless performance-critical.
+- Config & Environment:
+  - Use \`@nestjs/config\` with \`ConfigModule.forRoot()\`.
+  - Validate env vars with \`Joi\` or \`Zod\` schema in \`validationSchema\`.
+  - Inject config via \`ConfigService\` — never use \`process.env\` directly.
+  - Use namespaced configs (\`registerAs()\`) for complex configuration.
+- Testing:
+  - Use \`@nestjs/testing\` \`Test.createTestingModule()\` for unit tests.
+  - Mock providers with \`{ provide: Service, useValue: mockService }\`.
+  - Use \`supertest\` for e2e tests against the running app.
+  - Test guards, pipes and interceptors in isolation.
+  - Test file naming: \`<name>.spec.ts\` (unit), \`<name>.e2e-spec.ts\` (e2e).
+- Performance:
+  - Consider using \`FastifyAdapter\` instead of \`ExpressAdapter\` for high-throughput APIs.
+  - Avoid using \`class-transformer\` (\`new ValidationPipe({ transform: true })\`) on hot paths as it is slow. Use manual mapping if performance is critical.
+  - Map database entities to plain objects or use query builder \`.getRawMany()\` for large datasets instead of instantiating full Entity class instances.
+  - Use caching (\`CacheModule\`) for frequently accessed, rarely changing data.
+  - Offload heavy tasks (email, image processing) to queues (BullMQ/RabbitMQ) instead of blocking the main thread.
+- Naming Conventions:
+  - Files: \`kebab-case\` — \`user-profile.controller.ts\`, \`create-user.dto.ts\`.
+  - Classes: \`PascalCase\` — \`UserProfileController\`, \`CreateUserDto\`.
+  - Suffixes: \`.module\`, \`.controller\`, \`.service\`, \`.dto\`, \`.entity\`, \`.guard\`, \`.pipe\`, \`.interceptor\`, \`.filter\`, \`.decorator\`.
+`;
+
    const stackMap = {
       ts: common + ts,
       react: common + ts + react,
       node: common + ts + nodeApi,
+      nestjs: common + ts + nestjs,
       python: common + python,
       unity: common + unity,
    };

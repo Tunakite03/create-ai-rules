@@ -59,6 +59,7 @@ export const STACKS = [
    { key: 'ts', label: 'TypeScript (generic)' },
    { key: 'react', label: 'React / Next.js' },
    { key: 'node', label: 'Node.js API' },
+   { key: 'nestjs', label: 'NestJS' },
    { key: 'python', label: 'Python' },
    { key: 'unity', label: 'Unity (C#)' },
 ];

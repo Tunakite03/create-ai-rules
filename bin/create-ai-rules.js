@@ -47,7 +47,7 @@ if (opts.help) {
   ${bold('Flags')}
     -y, --yes           Accept defaults (Copilot + Generic, TypeScript stack)
     -f, --force         Overwrite existing files
-    --stack=<name>      Set stack: ts, react, node, python, unity (with -y)
+    --stack=<name>      Set stack: ts, react, node, nestjs, python, unity (with -y)
     --minimal           Skip optional files (prompts, skills, extras)
     -h, --help          Show this help
     -v, --version       Show version
@@ -65,6 +65,7 @@ if (opts.help) {
     ts               TypeScript (generic) — default
     react            React / Next.js
     node             Node.js API
+    nestjs           NestJS
     python           Python
     unity            Unity (C#)
 

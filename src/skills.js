@@ -84,7 +84,7 @@ didn't exist in the DB. Added explicit null-check + 404 response.
 
    // ── TypeScript / React / Node skills ─────────────────────────
 
-   if (stack === 'ts' || stack === 'react' || stack === 'node') {
+   if (stack === 'ts' || stack === 'react' || stack === 'node' || stack === 'nestjs') {
       files['.github/skills/create-service.md'] = `# Skill: Create a TypeScript Service
 
 ## Template
@@ -437,6 +437,257 @@ class <Name>:
 - [ ] No raw \`dict\` for structured data — always a model/dataclass.
 - [ ] Validators for non-trivial constraints.
 - [ ] Fields documented with \`Field(description=...)\`.
+`;
+   }
+
+
+   // ── NestJS skills ──────────────────────────────────────────────
+
+   if (stack === 'nestjs') {
+      files['.github/skills/create-nestjs-module.md'] = `# Skill: Create a NestJS Module
+
+## Template
+\\\`\\\`\\\`typescript
+// src/<feature>/<feature>.module.ts
+import { Module } from '@nestjs/common';
+import { <Feature>Controller } from './<feature>.controller';
+import { <Feature>Service } from './<feature>.service';
+
+@Module({
+  imports: [],
+  controllers: [<Feature>Controller],
+  providers: [<Feature>Service],
+  exports: [<Feature>Service], // export if other modules need this service
+})
+export class <Feature>Module {}
+\\\`\\\`\\\`
+
+## File structure
+\\\`\\\`\\\`
+src/<feature>/
+├── <feature>.module.ts
+├── <feature>.controller.ts
+├── <feature>.service.ts
+├── dto/
+│   ├── create-<feature>.dto.ts
+│   └── update-<feature>.dto.ts
+├── entities/
+│   └── <feature>.entity.ts
+├── <feature>.controller.spec.ts
+└── <feature>.service.spec.ts
+\\\`\\\`\\\`
+
+## Checklist
+- [ ] Module registered in parent module's \\\`imports\\\` array.
+- [ ] Controller handles HTTP only — no business logic.
+- [ ] Service contains all business logic, injected via constructor.
+- [ ] DTOs created for all request bodies with \\\`class-validator\\\` decorators.
+- [ ] Entity defined with proper TypeORM/Prisma decorators.
+- [ ] Unit tests for service and controller.
+- [ ] Exports only what other modules need.
+`;
+
+      files['.github/skills/create-nestjs-controller.md'] = `# Skill: Create a NestJS REST Controller
+
+## Template
+\\\`\\\`\\\`typescript
+// src/<feature>/<feature>.controller.ts
+import {
+  Controller, Get, Post, Put, Delete,
+  Param, Body, Query, HttpCode, HttpStatus,
+  ParseUUIDPipe, UsePipes, ValidationPipe,
+} from '@nestjs/common';
+import { ApiTags, ApiOperation, ApiResponse } from '@nestjs/swagger';
+import { <Feature>Service } from './<feature>.service';
+import { Create<Feature>Dto } from './dto/create-<feature>.dto';
+import { Update<Feature>Dto } from './dto/update-<feature>.dto';
+
+@ApiTags('<feature>')
+@Controller('<feature>')
+@UsePipes(new ValidationPipe({ whitelist: true, forbidNonWhitelisted: true }))
+export class <Feature>Controller {
+  constructor(private readonly <feature>Service: <Feature>Service) {}
+
+  @Post()
+  @ApiOperation({ summary: 'Create <feature>' })
+  @ApiResponse({ status: 201, description: 'Created successfully.' })
+  create(@Body() dto: Create<Feature>Dto) {
+    return this.<feature>Service.create(dto);
+  }
+
+  @Get()
+  @ApiOperation({ summary: 'List all <feature>s' })
+  findAll(@Query('page') page = 1, @Query('limit') limit = 20) {
+    return this.<feature>Service.findAll({ page: +page, limit: +limit });
+  }
+
+  @Get(':id')
+  @ApiOperation({ summary: 'Get <feature> by ID' })
+  findOne(@Param('id', ParseUUIDPipe) id: string) {
+    return this.<feature>Service.findOne(id);
+  }
+
+  @Put(':id')
+  @ApiOperation({ summary: 'Update <feature>' })
+  update(
+    @Param('id', ParseUUIDPipe) id: string,
+    @Body() dto: Update<Feature>Dto,
+  ) {
+    return this.<feature>Service.update(id, dto);
+  }
+
+  @Delete(':id')
+  @HttpCode(HttpStatus.NO_CONTENT)
+  @ApiOperation({ summary: 'Delete <feature>' })
+  remove(@Param('id', ParseUUIDPipe) id: string) {
+    return this.<feature>Service.remove(id);
+  }
+}
+\\\`\\\`\\\`
+
+## Checklist
+- [ ] All routes use proper HTTP method decorators.
+- [ ] Request data extracted via \\\`@Param()\\\`, \\\`@Body()\\\`, \\\`@Query()\\\` — not raw \\\`req\\\`.
+- [ ] \\\`ValidationPipe\\\` applied with \\\`whitelist: true\\\`.
+- [ ] Swagger decorators for API documentation.
+- [ ] \\\`ParseUUIDPipe\\\` (or \\\`ParseIntPipe\\\`) for ID params.
+- [ ] No business logic — only calls to service methods.
+- [ ] Proper HTTP status codes for each operation.
+- [ ] No long-running, CPU-heavy synchronous tasks inside route handlers (keeps event loop free).
+`;
+
+      files['.github/skills/create-nestjs-dto.md'] = `# Skill: Create NestJS DTOs
+
+## Create DTO
+\\\`\\\`\\\`typescript
+// src/<feature>/dto/create-<feature>.dto.ts
+import {
+  IsString, IsNotEmpty, IsEmail, IsOptional,
+  MinLength, MaxLength, IsEnum, IsNumber, Min,
+} from 'class-validator';
+import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
+
+export class Create<Feature>Dto {
+  @ApiProperty({ description: 'Name of the <feature>', example: 'Example' })
+  @IsString()
+  @IsNotEmpty()
+  @MinLength(2)
+  @MaxLength(100)
+  name: string;
+
+  @ApiProperty({ description: 'Email address', example: 'user@example.com' })
+  @IsEmail()
+  email: string;
+
+  @ApiPropertyOptional({ description: 'Optional description' })
+  @IsOptional()
+  @IsString()
+  @MaxLength(500)
+  description?: string;
+}
+\\\`\\\`\\\`
+
+## Update DTO (using mapped types)
+\\\`\\\`\\\`typescript
+// src/<feature>/dto/update-<feature>.dto.ts
+import { PartialType } from '@nestjs/mapped-types';
+import { Create<Feature>Dto } from './create-<feature>.dto';
+
+export class Update<Feature>Dto extends PartialType(Create<Feature>Dto) {}
+\\\`\\\`\\\`
+
+## Response DTO
+\\\`\\\`\\\`typescript
+// src/<feature>/dto/<feature>-response.dto.ts
+import { Exclude, Expose } from 'class-transformer';
+
+@Exclude()
+export class <Feature>ResponseDto {
+  @Expose() id: string;
+  @Expose() name: string;
+  @Expose() email: string;
+  @Expose() createdAt: Date;
+  // password, internal fields etc. are excluded automatically
+}
+\\\`\\\`\\\`
+
+## Checklist
+- [ ] Every field has \\\`class-validator\\\` decorators.
+- [ ] \\\`@ApiProperty()\\\` / \\\`@ApiPropertyOptional()\\\` for Swagger.
+- [ ] Update DTO extends \\\`PartialType(CreateDto)\\\` — DRY.
+- [ ] Response DTO uses \\\`@Exclude()\\\`/\\\`@Expose()\\\` to control output.
+- [ ] Optional fields marked with \\\`@IsOptional()\\\` + \\\`?\\\` suffix.
+- [ ] No raw \\\`any\\\` types in DTOs.
+`;
+
+      files['.github/skills/create-nestjs-guard.md'] = `# Skill: Create a NestJS Guard
+
+## Auth Guard Template
+\\\`\\\`\\\`typescript
+// src/auth/guards/jwt-auth.guard.ts
+import { Injectable, CanActivate, ExecutionContext, UnauthorizedException } from '@nestjs/common';
+import { Reflector } from '@nestjs/core';
+import { IS_PUBLIC_KEY } from '../decorators/public.decorator';
+
+@Injectable()
+export class JwtAuthGuard implements CanActivate {
+  constructor(private readonly reflector: Reflector) {}
+
+  canActivate(context: ExecutionContext): boolean {
+    // Check if route is marked as public
+    const isPublic = this.reflector.getAllAndOverride<boolean>(IS_PUBLIC_KEY, [
+      context.getHandler(),
+      context.getClass(),
+    ]);
+    if (isPublic) return true;
+
+    const request = context.switchToHttp().getRequest();
+    const token = this.extractToken(request);
+    if (!token) throw new UnauthorizedException('Missing auth token');
+
+    try {
+      // validate token, attach user to request
+      // request.user = decoded;
+      return true;
+    } catch {
+      throw new UnauthorizedException('Invalid token');
+    }
+  }
+
+  private extractToken(request: any): string | null {
+    const [type, token] = request.headers.authorization?.split(' ') ?? [];
+    return type === 'Bearer' ? token : null;
+  }
+}
+\\\`\\\`\\\`
+
+## Custom Public Decorator
+\\\`\\\`\\\`typescript
+// src/auth/decorators/public.decorator.ts
+import { SetMetadata } from '@nestjs/common';
+
+export const IS_PUBLIC_KEY = 'isPublic';
+export const Public = () => SetMetadata(IS_PUBLIC_KEY, true);
+\\\`\\\`\\\`
+
+## Usage
+\\\`\\\`\\\`typescript
+// Apply globally in main.ts
+app.useGlobalGuards(new JwtAuthGuard(new Reflector()));
+
+// Skip auth for specific routes
+@Public()
+@Get('health')
+healthCheck() { return { status: 'ok' }; }
+\\\`\\\`\\\`
+
+## Checklist
+- [ ] Guard implements \\\`CanActivate\\\` interface.
+- [ ] Uses \\\`Reflector\\\` to check metadata for public routes.
+- [ ] Throws \\\`UnauthorizedException\\\` with clear message.
+- [ ] Token extraction handles missing/malformed headers gracefully.
+- [ ] Guard registered globally or per-controller as appropriate.
+- [ ] Corresponding \\\`@Public()\\\` decorator for unauthenticated routes.
 `;
    }
 
