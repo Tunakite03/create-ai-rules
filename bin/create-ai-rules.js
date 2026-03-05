@@ -17,7 +17,7 @@ const pkg = JSON.parse(await fs.readFile(path.join(__dirname, '..', 'package.jso
 const argv = process.argv.slice(2);
 const FLAGS = new Set(argv.filter((a) => a.startsWith('-')));
 
-// Parse --stack=<name> from argv
+// Parse --stack=<name,...> from argv
 const stackArg = argv.find((a) => a.startsWith('--stack='));
 const stackValue = stackArg ? stackArg.split('=')[1] : null;
 const verbosityArg = argv.find((a) => a.startsWith('--verbosity='));
@@ -49,13 +49,12 @@ if (opts.help) {
   ${bold('Usage')}
     npx create-ai-rules          Interactive mode
     npx create-ai-rules -y       Quick defaults (Copilot + Generic, TypeScript)
+    npx create-ai-rules -y --stack=ts,node,go
 
   ${bold('Flags')}
     -y, --yes           Accept defaults (Copilot + Generic, TypeScript stack)
     -f, --force         Overwrite existing files
-    --stack=<name>      Set stack(s): ts, react, node, nestjs, python, unity (comma-separated, used with -y)
-    --full              Include extended stack-specific rule sections
-    --verbosity=<mode>  Rule detail profile: minimal, standard, strict
+    --stack=<name,...>  Set stack(s): ts,react,node,nestjs,python,unity,go,flutter (used with -y)
     --minimal           Skip optional files (prompts, skills, extras)
     --check-rules       Validate generated base rules for conflicts
     -h, --help          Show this help
@@ -124,11 +123,40 @@ async function main() {
 
    if (opts.yes) {
       selectedTargets = ['copilot', 'generic'];
-      // --stack=<name> accepts comma-separated values, overrides the default
+      // --stack accepts comma-separated values, overrides the default
       const validStacks = STACKS.map((s) => s.key);
       if (opts.stack) {
-         const parsed = opts.stack.split(',').filter((s) => validStacks.includes(s));
-         if (parsed.length > 0) stacks = parsed;
+         const requestedStacks = opts.stack
+            .split(',')
+            .map((s) => s.trim())
+            .filter(Boolean);
+
+         const { valid: parsedValid, invalid: parsedInvalid } = requestedStacks.reduce(
+            (acc, stackKey) => {
+               if (validStacks.includes(stackKey)) {
+                  acc.valid.push(stackKey);
+               } else {
+                  acc.invalid.push(stackKey);
+               }
+               return acc;
+            },
+            { valid: [], invalid: [] },
+         );
+
+         if (parsedInvalid.length > 0) {
+            console.warn(
+               `${yellow('Warning:')} Invalid stack(s): ${parsedInvalid.join(', ')}. Supported stacks: ${validStacks.join(', ')}.`,
+            );
+         }
+
+         if (parsedValid.length === 0) {
+            console.error(
+               `${bold('Error:')} All provided stacks are invalid. Use one or more of: ${validStacks.join(', ')}.`,
+            );
+            process.exit(1);
+         }
+
+         stacks = parsedValid;
       }
       const stackLabels = stacks.map((k) => STACKS.find((s) => s.key === k)?.label ?? k).join(', ');
       console.log(dim(`\nUsing defaults: Copilot + Generic, ${stackLabels} stack.`));
