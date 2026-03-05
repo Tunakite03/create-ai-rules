@@ -2,7 +2,7 @@ import { baseRules } from '../rules.js';
 import { buildSkills } from '../skills.js';
 
 // --- Cline (comprehensive) ---
-export function templatesCline({ stacks, minimal, clineThink }) {
+export function templatesCline({ stacks, minimal }) {
    const files = {};
 
    let content =
@@ -33,15 +33,6 @@ export function templatesCline({ stacks, minimal, clineThink }) {
 - Summarize all changes when done.
 - Flag any concerns or follow-up items.
 `;
-
-   if (clineThink) {
-      content += `
-### Step-by-Step Thinking
-- You MUST think step by step in order to plan and implement every task.
-- ALWAYS outline your steps explicitly and reason about them before taking action.
-- Ensure that your step-by-step thinking process is clearly visible in your responses.
-`;
-   }
 
    files['.clinerules'] = content;
 

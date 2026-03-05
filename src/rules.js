@@ -11,8 +11,8 @@ const commonRules = `# AI Coding Rules
 ## Identity & Behavior
 - You are an expert software engineer embedded in this project.
 - Read existing code BEFORE writing new code. Match patterns already in use.
-- Think step-by-step. Plan before you code.
-- When uncertain, ask for clarification instead of guessing.
+- Think carefully and plan before coding. Keep outputs concise and actionable.
+- When uncertain, verify from code/tests first; ask clarification only if ambiguity blocks a safe change.
 
 ## Core Workflow
 1. **Understand** - Read related files, understand the context.
@@ -21,16 +21,21 @@ const commonRules = `# AI Coding Rules
 4. **Verify** - Check for errors, edge cases, and regressions.
 5. **Document** - Explain what changed and why.
 
+## Rule Priority (Conflict Resolution)
+- If two rules conflict, apply this order: **Security > Correctness > Existing architecture/patterns > Performance > Style**.
+- Use RFC 2119 semantics: **MUST** (required), **SHOULD** (strong default), **MAY** (optional).
+- If a strict rule would block delivery, choose the safest minimal change and document the trade-off.
+
 ## Non-negotiables
 - Do NOT use \`any\` (or equivalent loose types) unless explicitly requested.
-- Do NOT add new dependencies unless asked. Use what is already installed.
+- Prefer existing dependencies first; only propose/add new ones when explicitly approved.
 - Do NOT change public APIs, function signatures, or database schemas unless asked.
 - Do NOT remove existing code comments, tests, or functionality without reason.
 - Do NOT invent new architectural patterns - follow what the codebase already uses.
 - Follow existing code style, formatting, and naming conventions exactly.
 
 ## Code Quality
-- **Small functions** (< 40 lines). Extract helpers aggressively.
+- **Small functions** (usually < 40 lines when practical). Extract helpers where it improves readability.
 - **Explicit naming** over abbreviations. \`getUserById\` not \`getUsr\`.
 - **Early returns** to reduce nesting. Max 2-3 levels of indentation.
 - **Pure functions** when possible. Minimize mutation and side effects.
@@ -121,7 +126,7 @@ const reactRules = `
   - Memoize expensive child components (\`React.memo\`) when parent re-renders frequently.
   - Use virtualization (\`react-window\` / \`react-virtuoso\`) for long lists to prevent DOM bloat.
   - Avoid creating anonymous objects/functions in render for props passed to memoized children.
-  - Keep React Context flat. Deep context causes widespread re-renders. Use Zustand/Jotai for atomic state.
+  - Keep React Context flat. Deep context causes widespread re-renders. Prefer the project's existing state-management approach.
   - Use \`useTransition\` or \`useDeferredValue\` for non-blocking state updates (e.g., search filtering).
 - Follow docs/ui-style-guide.md strictly.
 - Do not hardcode colors; use semantic Tailwind tokens.
@@ -132,7 +137,7 @@ const reactRules = `
 const nodeApiRules = `
 ## Node / API
 - Use async/await everywhere. No callbacks, no raw \`.then()\` chains.
-- Validate ALL request inputs at the boundary using a schema library (Zod, Joi, etc.).
+- Validate ALL request inputs at the boundary using the project's existing validator (or explicit manual validation when none exists).
 - Consistent error response format: \`{ error: { code: "INVALID_INPUT", message: "..." } }\`.
 - Error codes as constants: \`INVALID_INPUT\`, \`NOT_FOUND\`, \`UNAUTHORIZED\`, \`FORBIDDEN\`, \`CONFLICT\`, \`INTERNAL_ERROR\`.
 - HTTP status codes: use correct ones (400, 401, 403, 404, 409, 422, 500).
@@ -187,7 +192,7 @@ const pythonRules = `
 - Docstrings: Google style or NumPy style, be consistent.
 - Performance:
   - Use generators/yield instead of returning massive lists to save memory.
-  - Use \`orjson\` or \`ujson\` instead of the standard \`json\` module for high-throughput APIs.
+  - Prefer the standard \`json\` module by default; use \`orjson\`/\`ujson\` only when already adopted or performance profiling justifies it.
   - Profile before optimizing using \`cProfile\` or \`line_profiler\`.
   - Use vectorized operations (\`numpy\`, \`pandas\`) instead of native Python loops for large datasets.
   - Avoid excessive string concatenation in loops (\`str += msg\`); use \`''.join(list)\` instead.
@@ -375,7 +380,7 @@ src/
     expiresIn: process.env.JWT_EXPIRES_IN ?? '15m',
   }));
   \`\`\`
-- Validate env vars at startup with Zod (preferred) or Joi in \`config.validation.ts\`. App must fail fast with a clear error if required vars are missing.
+- Validate env vars at startup with the project's existing schema validator (Zod/Joi/class-validator/etc.). App must fail fast with a clear error if required vars are missing.
 - Inject typed config with generic \`ConfigService\`:
   \`\`\`ts
   private readonly jwtConfig = this.configService.get<JwtConfig>('jwt', { infer: true });
@@ -440,7 +445,7 @@ src/
   \`\`\`
 - E2E tests: spin up full \`NestApplication\` with in-memory SQLite or Testcontainers (Postgres). Use \`supertest\`.
 - Test naming: \`users.service.spec.ts\` (unit), \`users.controller.spec.ts\` (unit), \`users.e2e-spec.ts\` (e2e).
-- Aim for: 100% coverage on service/repository logic; smoke tests on every controller endpoint; full flows for critical paths (auth, checkout, payment).
+- Aim for high-value coverage on service/repository logic; smoke tests on every controller endpoint; full flows for critical paths (auth, checkout, payment).
 - Use \`jest.spyOn()\` for verifying side-effects (events emitted, queue jobs enqueued). Never test implementation details — test behavior.
 
 ### Performance

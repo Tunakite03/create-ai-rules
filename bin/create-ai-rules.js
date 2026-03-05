@@ -8,6 +8,7 @@ import { fileURLToPath } from 'node:url';
 import { bold, dim, green, yellow, selectOne, selectMulti } from '../src/ui.js';
 import { writeFileSafe } from '../src/fs-utils.js';
 import { TARGETS, STACKS } from '../src/templates/index.js';
+import { runRuleChecks } from '../src/rule-check.js';
 
 // --- Version & CLI flags ---
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
@@ -24,7 +25,7 @@ const opts = {
    yes: FLAGS.has('--yes') || FLAGS.has('-y'),
    force: FLAGS.has('--force') || FLAGS.has('-f'),
    minimal: FLAGS.has('--minimal'),
-   clineThink: FLAGS.has('--cline-think'),
+   checkRules: FLAGS.has('--check-rules'),
    help: FLAGS.has('--help') || FLAGS.has('-h'),
    version: FLAGS.has('--version') || FLAGS.has('-v'),
    stack: stackValue,
@@ -50,7 +51,7 @@ if (opts.help) {
     -f, --force         Overwrite existing files
     --stack=<name>      Set stack(s): ts, react, node, nestjs, python, unity (comma-separated, used with -y)
     --minimal           Skip optional files (prompts, skills, extras)
-    --cline-think       Add step-by-step thinking instructions for Cline
+    --check-rules       Validate generated base rules for conflicts
     -h, --help          Show this help
     -v, --version       Show version
 
@@ -70,6 +71,8 @@ if (opts.help) {
     nestjs           NestJS
     python           Python
     unity            Unity (C#)
+    go               Go (Golang)
+    flutter          Flutter (Dart)
 
   ${bold('Interactive navigation')}
     ↑/↓   Move cursor
@@ -84,13 +87,32 @@ if (opts.help) {
 //  Main
 // ================================================================
 async function main() {
+   if (opts.checkRules) {
+      const report = runRuleChecks();
+      if (!report.ok) {
+         console.error(`\n${bold('Rule check failed:')}`);
+         for (const err of report.errors) {
+            console.error(`  - ${err}`);
+         }
+         for (const warn of report.warnings) {
+            console.error(`  - warning: ${warn}`);
+         }
+         process.exit(1);
+      }
+
+      console.log(`${green('Rule check passed.')}`);
+      for (const warn of report.warnings) {
+         console.log(`${yellow('Warning:')} ${warn}`);
+      }
+      process.exit(0);
+   }
+
    console.log(`\n${bold('create-ai-rules')} ${dim(`v${pkg.version}`)}`);
    console.log(dim('Scaffold AI coding rules for your IDE assistants.'));
 
    let selectedTargets = [];
    let stacks = ['ts'];
    let minimal = opts.minimal;
-   let clineThink = opts.clineThink;
 
    if (opts.yes) {
       selectedTargets = ['copilot', 'generic'];
@@ -118,19 +140,9 @@ async function main() {
       ];
       const chosenMinimal = await selectOne('3. Minimal mode?', minimalOptions, 0);
       minimal = chosenMinimal.value;
-
-      // -- 4. Cline step-by-step thinking --
-      if (selectedTargets.includes('cline')) {
-         const thinkOptions = [
-            { label: 'Yes — add step-by-step thinking instructions', value: true },
-            { label: 'No  — standard strict instructions', value: false },
-         ];
-         const chosenThink = await selectOne('4. Enable step-by-step thinking for Cline?', thinkOptions, 0);
-         clineThink = chosenThink.value;
-      }
    }
 
-   const cfg = { stacks, minimal, clineThink };
+   const cfg = { stacks, minimal };
 
    // -- Merge all files from selected targets --
    const merged = {};
@@ -174,3 +186,4 @@ main().catch((err) => {
    console.error(`\n${bold('Error:')} ${err?.message ?? err}`);
    process.exit(1);
 });
+
