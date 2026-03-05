@@ -24,6 +24,7 @@ const opts = {
    yes: FLAGS.has('--yes') || FLAGS.has('-y'),
    force: FLAGS.has('--force') || FLAGS.has('-f'),
    minimal: FLAGS.has('--minimal'),
+   clineThink: FLAGS.has('--cline-think'),
    help: FLAGS.has('--help') || FLAGS.has('-h'),
    version: FLAGS.has('--version') || FLAGS.has('-v'),
    stack: stackValue,
@@ -49,6 +50,7 @@ if (opts.help) {
     -f, --force         Overwrite existing files
     --stack=<name>      Set stack: ts, react, node, nestjs, python, unity (with -y)
     --minimal           Skip optional files (prompts, skills, extras)
+    --cline-think       Add step-by-step thinking instructions for Cline
     -h, --help          Show this help
     -v, --version       Show version
 
@@ -88,6 +90,7 @@ async function main() {
    let selectedTargets = [];
    let stack = 'ts';
    let minimal = opts.minimal;
+   let clineThink = opts.clineThink;
 
    if (opts.yes) {
       selectedTargets = ['copilot', 'generic'];
@@ -114,9 +117,19 @@ async function main() {
       ];
       const chosenMinimal = await selectOne('3. Minimal mode?', minimalOptions, 0);
       minimal = chosenMinimal.value;
+
+      // -- 4. Cline step-by-step thinking --
+      if (selectedTargets.includes('cline')) {
+         const thinkOptions = [
+            { label: 'Yes — add step-by-step thinking instructions', value: true },
+            { label: 'No  — standard strict instructions', value: false },
+         ];
+         const chosenThink = await selectOne('4. Enable step-by-step thinking for Cline?', thinkOptions, 0);
+         clineThink = chosenThink.value;
+      }
    }
 
-   const cfg = { stack, minimal };
+   const cfg = { stack, minimal, clineThink };
 
    // -- Merge all files from selected targets --
    const merged = {};
