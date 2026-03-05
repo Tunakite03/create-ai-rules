@@ -35,6 +35,14 @@ const opts = {
    verbosity: verbosityValue,
 };
 
+const stackKeys = STACKS.map((stack) => stack.key);
+const stackLineWidth = Math.max(...stackKeys.map((key) => key.length));
+const stackHelpFlagList = stackKeys.join(', ');
+const stackHelpList = STACKS.map((stack) => {
+   const defaultSuffix = stack.key === 'ts' ? ' — default' : '';
+   return `    ${stack.key.padEnd(stackLineWidth)}   ${stack.label}${defaultSuffix}`;
+}).join('\n');
+
 // --- Help & Version ---
 if (opts.version) {
    console.log(pkg.version);
@@ -55,6 +63,7 @@ if (opts.help) {
     -y, --yes           Accept defaults (Copilot + Generic, TypeScript stack)
     -f, --force         Overwrite existing files
     --stack=<name,...>  Set stack(s): ts,react,node,nestjs,python,unity,go,flutter (used with -y)
+
     --minimal           Skip optional files (prompts, skills, extras)
     --check-rules       Validate generated base rules for conflicts
     -h, --help          Show this help
@@ -70,14 +79,7 @@ if (opts.help) {
     Generic          AGENTS.md
 
   ${bold('Stacks')}
-    ts               TypeScript (generic) — default
-    react            React / Next.js
-    node             Node.js API
-    nestjs           NestJS
-    python           Python
-    unity            Unity (C#)
-    go               Go (Golang)
-    flutter          Flutter (Dart)
+${stackHelpList}
 
   ${bold('Interactive navigation')}
     ↑/↓   Move cursor
