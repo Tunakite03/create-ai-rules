@@ -147,7 +147,6 @@ export async function selectMulti(question, items, defaultSelected = null) {
    } else if (items.length >= 2) {
       // Pre-select first two items by default
       selected.add(0);
-      selected.add(1);
    } else if (items.length === 1) {
       selected.add(0);
    }
