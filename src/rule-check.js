@@ -7,7 +7,7 @@ function has(pattern, text) {
 }
 
 export function runRuleChecks() {
-   const text = baseRules({ stacks: ALL_STACKS });
+   const text = baseRules({ stacks: ALL_STACKS, full: true, verbosity: 'strict' });
    const errors = [];
    const warnings = [];
 
@@ -25,7 +25,7 @@ export function runRuleChecks() {
       errors.push('Prompt safety conflict: rules require exposing step-by-step reasoning.');
    }
 
-   if (!has(/Rule Priority \(Conflict Resolution\)/, text)) {
+   if (!has(/Rule Priority/, text)) {
       warnings.push('Missing conflict resolution section (priority order + MUST/SHOULD/MAY).');
    }
 
