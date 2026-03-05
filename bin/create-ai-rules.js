@@ -48,7 +48,7 @@ if (opts.help) {
   ${bold('Flags')}
     -y, --yes           Accept defaults (Copilot + Generic, TypeScript stack)
     -f, --force         Overwrite existing files
-    --stack=<name>      Set stack: ts, react, node, nestjs, python, unity (with -y)
+    --stack=<name>      Set stack(s): ts, react, node, nestjs, python, unity (comma-separated, used with -y)
     --minimal           Skip optional files (prompts, skills, extras)
     --cline-think       Add step-by-step thinking instructions for Cline
     -h, --help          Show this help
@@ -88,27 +88,28 @@ async function main() {
    console.log(dim('Scaffold AI coding rules for your IDE assistants.'));
 
    let selectedTargets = [];
-   let stack = 'ts';
+   let stacks = ['ts'];
    let minimal = opts.minimal;
    let clineThink = opts.clineThink;
 
    if (opts.yes) {
       selectedTargets = ['copilot', 'generic'];
-      // --stack=<name> overrides the default
+      // --stack=<name> accepts comma-separated values, overrides the default
       const validStacks = STACKS.map((s) => s.key);
-      if (opts.stack && validStacks.includes(opts.stack)) {
-         stack = opts.stack;
+      if (opts.stack) {
+         const parsed = opts.stack.split(',').filter((s) => validStacks.includes(s));
+         if (parsed.length > 0) stacks = parsed;
       }
-      const stackLabel = STACKS.find((s) => s.key === stack)?.label ?? stack;
-      console.log(dim(`\nUsing defaults: Copilot + Generic, ${stackLabel} stack.\n`));
+      const stackLabels = stacks.map((k) => STACKS.find((s) => s.key === k)?.label ?? k).join(', ');
+      console.log(dim(`\nUsing defaults: Copilot + Generic, ${stackLabels} stack.\n`));
    } else {
       // -- 1. Select targets --
       const chosenTargets = await selectMulti('1. Select targets', TARGETS);
       selectedTargets = chosenTargets.map((t) => t.key);
 
-      // -- 2. Select stack --
-      const chosenStack = await selectOne('2. Select tech stack', STACKS, 0);
-      stack = chosenStack.key;
+      // -- 2. Select tech stacks (multi-select) --
+      const chosenStacks = await selectMulti('2. Select tech stack(s)', STACKS, [0]);
+      stacks = chosenStacks.map((s) => s.key);
 
       // -- 3. Minimal mode --
       const minimalOptions = [
@@ -129,7 +130,7 @@ async function main() {
       }
    }
 
-   const cfg = { stack, minimal, clineThink };
+   const cfg = { stacks, minimal, clineThink };
 
    // -- Merge all files from selected targets --
    const merged = {};

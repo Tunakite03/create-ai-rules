@@ -2,11 +2,11 @@ import { baseRules } from '../rules.js';
 import { buildSkills } from '../skills.js';
 
 // --- Windsurf (comprehensive) ---
-export function templatesWindsurf({ stack, minimal }) {
+export function templatesWindsurf({ stacks, minimal }) {
    const files = {};
 
    files['.windsurfrules'] =
-      baseRules({ stack }) +
+      baseRules({ stacks }) +
       `
 ## Windsurf-Specific Behavior
 
@@ -29,7 +29,7 @@ export function templatesWindsurf({ stack, minimal }) {
 `;
 
    if (!minimal) {
-      const skills = buildSkills({ stack });
+      const skills = buildSkills({ stacks });
       for (const [k, v] of Object.entries(skills)) {
          files[k.replace('.github/skills/', '.windsurf/skills/')] = v;
       }

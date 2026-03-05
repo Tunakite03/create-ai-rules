@@ -111,12 +111,15 @@ export async function selectOne(question, items, defaultIdx = 0) {
    });
 }
 
-/** Multi-select: ↑/↓ to navigate, Space to toggle, A to toggle all, Enter to confirm. */
-export async function selectMulti(question, items) {
+/** Multi-select: ↑/↓ to navigate, Space to toggle, A to toggle all, Enter to confirm.
+ *  @param {number[]|null} defaultSelected - Indices to pre-select. Defaults to first two. */
+export async function selectMulti(question, items, defaultSelected = null) {
    let idx = 0;
    const selected = new Set();
-   // Pre-select first two items by default
-   if (items.length >= 2) {
+   if (defaultSelected !== null) {
+      for (const i of defaultSelected) selected.add(i);
+   } else if (items.length >= 2) {
+      // Pre-select first two items by default
       selected.add(0);
       selected.add(1);
    } else if (items.length === 1) {

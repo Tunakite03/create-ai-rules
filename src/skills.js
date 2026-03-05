@@ -2,7 +2,7 @@
 //  SKILLS - Stack-aware reusable task templates
 // ================================================================
 
-export function buildSkills({ stack }) {
+export function buildSkills({ stacks }) {
    const files = {};
 
    // ── Common skills (all stacks) ────────────────────────────────
@@ -695,7 +695,7 @@ Structure AI responses with: Understanding, Approach, Implementation, Testing, a
 
    // ── TypeScript / React / Node skills ─────────────────────────
 
-   if (stack === 'ts' || stack === 'react' || stack === 'node' || stack === 'nestjs') {
+   if (stacks.some((s) => ['ts', 'react', 'node', 'nestjs'].includes(s))) {
       files['.github/skills/create-service.md'] = `# Skill: Create a TypeScript Service
 
 ## Template
@@ -768,7 +768,7 @@ const toUserId = (id: string): UserId => id as UserId;
 
    // ── React skills ──────────────────────────────────────────────
 
-   if (stack === 'react') {
+   if (stacks.includes('react')) {
       files['.github/skills/create-component.md'] = `# Skill: Create a React Component
 
 ## Template
@@ -890,7 +890,7 @@ export default async function <Name>Page({ params, searchParams }: PageProps) {
 
    // ── Node API skills ───────────────────────────────────────────
 
-   if (stack === 'node') {
+   if (stacks.includes('node')) {
       files['.github/skills/create-endpoint.md'] = `# Skill: Create a REST API Endpoint
 
 ## Template (Express / Hono / Fastify pattern)
@@ -974,7 +974,7 @@ export function errorHandler(
 
    // ── Python skills ─────────────────────────────────────────────
 
-   if (stack === 'python') {
+   if (stacks.includes('python')) {
       files['.github/skills/create-module.md'] = `# Skill: Create a Python Module
 
 ## Template
@@ -1056,10 +1056,9 @@ class <Name>:
 `;
    }
 
-
    // ── NestJS skills ──────────────────────────────────────────────
 
-   if (stack === 'nestjs') {
+   if (stacks.includes('nestjs')) {
       files['.github/skills/create-nestjs-module.md'] = `# Skill: Create a NestJS Module
 
 ## Template
@@ -1309,7 +1308,7 @@ healthCheck() { return { status: 'ok' }; }
 
    // ── Unity skills ──────────────────────────────────────────────
 
-   if (stack === 'unity') {
+   if (stacks.includes('unity')) {
       files['.github/skills/create-monobehaviour.md'] = `# Skill: Create a MonoBehaviour
 
 ## Template

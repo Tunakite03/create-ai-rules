@@ -6,11 +6,11 @@ function instructionHeader(applyTo) {
 }
 
 // --- GitHub Copilot (comprehensive) ---
-export function templatesCopilot({ stack, minimal }) {
+export function templatesCopilot({ stacks, minimal }) {
    const files = {};
 
    // Main instructions file
-   files['.github/copilot-instructions.md'] = baseRules({ stack });
+   files['.github/copilot-instructions.md'] = baseRules({ stacks });
 
    // --- Granular instruction files ---
 
@@ -57,7 +57,7 @@ export function templatesCopilot({ stack, minimal }) {
 `;
 
    // Unity-specific instruction file
-   if (stack === 'unity') {
+   if (stacks.includes('unity')) {
       files['.github/instructions/05-unity.instructions.md'] =
          instructionHeader('**/*.cs') +
          `# Unity / C# Rules
@@ -98,7 +98,7 @@ export function templatesCopilot({ stack, minimal }) {
    }
 
    // Tailwind + shadcn/ui style guide for React stack
-   if (stack === 'react') {
+   if (stacks.includes('react')) {
       files['.github/instructions/05-ui-style.instructions.md'] =
          instructionHeader('**/*.{tsx,jsx,css}') +
          `# UI Style Guide (Tailwind + shadcn/ui)
@@ -153,7 +153,7 @@ export function templatesCopilot({ stack, minimal }) {
    }
 
    // Go-specific instruction file
-   if (stack === 'go') {
+   if (stacks.includes('go')) {
       files['.github/instructions/05-go.instructions.md'] =
          instructionHeader('**/*.go') +
          `# Go Rules
@@ -195,7 +195,7 @@ export function templatesCopilot({ stack, minimal }) {
    }
 
    // Flutter-specific instruction file
-   if (stack === 'flutter') {
+   if (stacks.includes('flutter')) {
       files['.github/instructions/05-flutter.instructions.md'] =
          instructionHeader('**/*.dart') +
          `# Flutter / Dart Rules
@@ -606,7 +606,7 @@ Provide a structured explanation:
 
    // --- Skills (task-specific templates) ---
    if (!minimal) {
-      const skills = buildSkills({ stack });
+      const skills = buildSkills({ stacks });
       Object.assign(files, skills);
    }
 

@@ -2,11 +2,11 @@ import { baseRules } from '../rules.js';
 import { buildSkills } from '../skills.js';
 
 // --- Antigravity (Google DeepMind AI IDE) ---
-export function templatesAntigravity({ stack, minimal }) {
+export function templatesAntigravity({ stacks, minimal }) {
    const files = {};
 
    files['.agent/rules/ai-rules.md'] =
-      baseRules({ stack }) +
+      baseRules({ stacks }) +
       `
 ## Antigravity-Specific Behavior
 
@@ -45,7 +45,7 @@ export function templatesAntigravity({ stack, minimal }) {
 `;
 
    if (!minimal) {
-      const skills = buildSkills({ stack });
+      const skills = buildSkills({ stacks });
       for (const [k, v] of Object.entries(skills)) {
          files[k.replace('.github/skills/', '.agent/workflows/')] = v;
       }

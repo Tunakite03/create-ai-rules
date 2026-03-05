@@ -2,11 +2,11 @@ import { baseRules } from '../rules.js';
 import { buildSkills } from '../skills.js';
 
 // --- Generic / Agents (comprehensive) ---
-export function templatesGeneric({ stack, minimal }) {
+export function templatesGeneric({ stacks, minimal }) {
    const files = {};
 
    files['AGENTS.md'] =
-      baseRules({ stack }) +
+      baseRules({ stacks }) +
       `
 ## Agent Behavior Guidelines
 
@@ -33,7 +33,7 @@ copy this content to the appropriate location.
 `;
 
    if (!minimal) {
-      const skills = buildSkills({ stack });
+      const skills = buildSkills({ stacks });
       Object.assign(files, skills);
    }
 

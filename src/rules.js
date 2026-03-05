@@ -388,20 +388,39 @@ const flutterRules = `
   - Handle platform channels safely — always handle \`MissingPluginException\`.
 `;
 
-const STACK_MAP = {
-   ts: commonRules + tsRules,
-   react: commonRules + tsRules + reactRules,
-   node: commonRules + tsRules + nodeApiRules,
-   nestjs: commonRules + tsRules + nestjsRules,
-   python: commonRules + pythonRules,
-   unity: commonRules + unityRules,
-   go: commonRules + golangRules,
-   flutter: commonRules + flutterRules,
+const TS_STACKS = new Set(['ts', 'react', 'node', 'nestjs']);
+
+// Extra rules per stack, beyond commonRules and tsRules
+const STACK_EXTRA_RULES = {
+   ts: '',
+   react: reactRules,
+   node: nodeApiRules,
+   nestjs: nestjsRules,
+   python: pythonRules,
+   unity: unityRules,
+   go: golangRules,
+   flutter: flutterRules,
 };
 
-export function baseRules({ stack }) {
-   if (!VALID_STACKS.has(stack)) {
-      console.warn(`Warning: Unknown stack "${stack}", falling back to "ts".`);
+export function baseRules({ stacks }) {
+   const valid = (stacks ?? ['ts']).filter((s) => VALID_STACKS.has(s));
+   if (valid.length === 0) {
+      console.warn(`Warning: No valid stacks provided, falling back to "ts".`);
+      valid.push('ts');
    }
-   return STACK_MAP[stack] ?? STACK_MAP.ts;
+
+   let result = commonRules;
+
+   if (valid.some((s) => TS_STACKS.has(s))) {
+      result += tsRules;
+   }
+
+   const seen = new Set();
+   for (const s of valid) {
+      if (seen.has(s)) continue;
+      seen.add(s);
+      result += STACK_EXTRA_RULES[s] ?? '';
+   }
+
+   return result;
 }

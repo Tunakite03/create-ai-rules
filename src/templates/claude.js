@@ -2,11 +2,11 @@ import { baseRules } from '../rules.js';
 import { buildSkills } from '../skills.js';
 
 // --- Claude Code (comprehensive) ---
-export function templatesClaude({ stack, minimal }) {
+export function templatesClaude({ stacks, minimal }) {
    const files = {};
 
    files['CLAUDE.md'] =
-      baseRules({ stack }) +
+      baseRules({ stacks }) +
       `
 ## Claude Code Behavior
 
@@ -36,7 +36,7 @@ export function templatesClaude({ stack, minimal }) {
 `;
 
    if (!minimal) {
-      const skills = buildSkills({ stack });
+      const skills = buildSkills({ stacks });
       for (const [k, v] of Object.entries(skills)) {
          files[k.replace('.github/', '.claude/')] = v;
       }

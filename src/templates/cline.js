@@ -2,11 +2,11 @@ import { baseRules } from '../rules.js';
 import { buildSkills } from '../skills.js';
 
 // --- Cline (comprehensive) ---
-export function templatesCline({ stack, minimal, clineThink }) {
+export function templatesCline({ stacks, minimal, clineThink }) {
    const files = {};
 
    let content =
-      baseRules({ stack }) +
+      baseRules({ stacks }) +
       `
 ## Cline-Specific Behavior
 
@@ -46,7 +46,7 @@ export function templatesCline({ stack, minimal, clineThink }) {
    files['.clinerules'] = content;
 
    if (!minimal) {
-      const skills = buildSkills({ stack });
+      const skills = buildSkills({ stacks });
       for (const [k, v] of Object.entries(skills)) {
          files[k.replace('.github/skills/', '.cline/skills/')] = v;
       }

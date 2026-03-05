@@ -2,7 +2,7 @@ import { baseRules } from '../rules.js';
 import { buildSkills } from '../skills.js';
 
 // --- Cursor (comprehensive .mdc rules) ---
-export function templatesCursor({ stack, minimal }) {
+export function templatesCursor({ stacks, minimal }) {
    const files = {};
 
    files['.cursor/rules/base.mdc'] = `---
@@ -10,7 +10,7 @@ description: Base coding rules for AI assistant
 globs: 
 alwaysApply: true
 ---
-${baseRules({ stack })}
+${baseRules({ stacks })}
 `;
 
    files['.cursor/rules/style.mdc'] = `---
@@ -51,7 +51,7 @@ alwaysApply: true
 `;
 
    // Unity-specific Cursor rules
-   if (stack === 'unity') {
+   if (stacks.includes('unity')) {
       files['.cursor/rules/unity.mdc'] = [
          '---',
          'description: Unity C# patterns and performance rules',
@@ -92,7 +92,7 @@ alwaysApply: true
    }
 
    // Tailwind + shadcn style guide for React stack
-   if (stack === 'react') {
+   if (stacks.includes('react')) {
       files['.cursor/rules/ui-style.mdc'] = [
          '---',
          'description: Tailwind + shadcn/ui style guide',
@@ -221,7 +221,7 @@ alwaysApply: false
 
    // --- Skills (remapped to .cursor/skills/) ---
    if (!minimal) {
-      const skills = buildSkills({ stack });
+      const skills = buildSkills({ stacks });
       for (const [k, v] of Object.entries(skills)) {
          files[k.replace('.github/skills/', '.cursor/skills/')] = v;
       }
