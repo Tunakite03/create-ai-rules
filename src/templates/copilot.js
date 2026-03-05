@@ -1,5 +1,6 @@
 import { baseRules } from '../rules.js';
 import { buildSkills } from '../skills.js';
+import { renderBullets, sharedBehavior } from './shared-behavior.js';
 
 function instructionHeader(applyTo) {
    return `---\napplyTo: "${applyTo}"\n---\n`;
@@ -37,6 +38,12 @@ export function templatesCopilot({ stacks, minimal, full = false, verbosity = 's
 - Guard clauses at the top of functions.
 - Group related code together. Separate with blank lines.
 - Imports order: built-in -> external -> internal -> types -> styles.
+
+## Workflow
+${renderBullets([
+         ...sharedBehavior.readBeforeWrite,
+         'Propose the smallest safe diff before implementing.',
+      ])}
 
 ## Comments
 - Comments explain WHY, not WHAT. Code is self-documenting.
