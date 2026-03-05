@@ -11,27 +11,12 @@ export function templatesClaude({ stacks, minimal, full = false, verbosity = 'st
       `
 ## Claude Code Behavior
 
-### Before Writing Code
-${renderBullets([
-         ...sharedBehavior.readBeforeWrite,
-         'Check related tests to understand expected behavior.',
-      ])}
-
-### While Writing Code
-${renderBullets([
-         ...sharedBehavior.minimalDiff,
-         'Follow the established code style exactly (indentation, naming, patterns).',
-         'Add comprehensive error handling for all new code paths.',
-      ])}
-
-### After Writing Code
-${renderBullets(sharedBehavior.verification)}
-
 ### Communication Style
 ${renderBullets([
-         ...sharedBehavior.communication,
-         'Lead with the answer and show code changes with file paths.',
-      ])}
+   ...sharedBehavior.communication,
+   'Lead with the answer. Show code changes with file paths.',
+   'Check related tests to understand expected behavior before coding.',
+])}
 `;
 
    if (!minimal) {

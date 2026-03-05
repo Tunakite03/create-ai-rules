@@ -34,22 +34,8 @@
 
 ## Claude Code Behavior
 
-### Before Writing Code
-- Read existing files and understand project structure before making changes.
-- Follow existing patterns and conventions. Do not introduce new architecture unless requested.
-- Check related tests to understand expected behavior.
-
-### While Writing Code
-- Make minimal, focused changes. Avoid unrelated refactors.
-- Add tests for new logic or bug fixes.
-- Follow the established code style exactly (indentation, naming, patterns).
-- Add comprehensive error handling for all new code paths.
-
-### After Writing Code
-- Verify changes compile/lint and relevant tests pass.
-- Summarize what changed and why, including risks or follow-up if needed.
-
 ### Communication Style
 - Be direct and concise. Explain non-obvious decisions.
 - When uncertainty exists, state assumptions clearly before proceeding.
-- Lead with the answer and show code changes with file paths.
+- Lead with the answer. Show code changes with file paths.
+- Check related tests to understand expected behavior before coding.

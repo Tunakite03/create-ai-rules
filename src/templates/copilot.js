@@ -40,10 +40,7 @@ export function templatesCopilot({ stacks, minimal, full = false, verbosity = 's
 - Imports order: built-in -> external -> internal -> types -> styles.
 
 ## Workflow
-${renderBullets([
-         ...sharedBehavior.readBeforeWrite,
-         'Propose the smallest safe diff before implementing.',
-      ])}
+${renderBullets([...sharedBehavior.readBeforeWrite, 'Propose the smallest safe diff before implementing.'])}
 
 ## Comments
 - Comments explain WHY, not WHAT. Code is self-documenting.
@@ -198,6 +195,44 @@ ${renderBullets([
 - Table-driven tests with \`t.Run()\`.
 - \`httptest.NewServer\` for HTTP handler tests.
 - \`t.Cleanup()\` for teardown.
+`;
+   }
+
+   // NestJS-specific instruction file
+   if (stacks.includes('nestjs')) {
+      files['.github/instructions/05-nestjs.instructions.md'] =
+         instructionHeader('**/*.ts') +
+         `# NestJS Rules
+
+## Architecture
+- One module per feature domain. Never share repositories across modules directly — expose a service instead.
+- Controllers handle HTTP mapping only. Move all business logic to services.
+- Use \`forwardRef()\` sparingly — circular module deps signal a design flaw.
+
+## Validation
+- Enable \`ValidationPipe\` globally with \`{ whitelist: true, forbidNonWhitelisted: true }\`.
+- Every \`@Body()\` / \`@Query()\` / \`@Param()\` must be typed via a DTO with class-validator decorators (or Zod schema).
+- Never trust raw request payloads inside service methods.
+
+## Error Handling
+- Throw domain errors (plain classes) from services — never \`HttpException\` subclasses.
+- Catch and translate domain errors in a global \`ExceptionFilter\`.
+- Return a consistent error shape: \`{ error: { code, message, details? } }\`.
+
+## Guards & Interceptors
+- Apply \`@UseGuards\` at controller or global scope, not per-method unless truly necessary.
+- Use interceptors for cross-cutting concerns: logging, response transformation, caching headers.
+- Never call \`next.handle()\` more than once inside an interceptor.
+
+## Providers & Scopes
+- Default scope (singleton) for stateless services. Use \`Scope.REQUEST\` only when per-request isolation is required.
+- Avoid \`ModuleRef.get()\` for normal DI — it bypasses the dependency graph and makes testing harder.
+- Prefer constructor injection; avoid property injection (\`@Inject()\` on fields).
+
+## Testing
+- Unit test services in isolation — mock all dependencies with \`jest.fn()\` / \`createMock()\`.
+- Use \`@nestjs/testing\` \`Test.createTestingModule()\` for integration tests.
+- Controller tests should assert correct delegation to service, not business logic.
 `;
    }
 

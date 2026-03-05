@@ -8,8 +8,16 @@ const TS_RULES = {
 `,
    strict: `## TypeScript
 - MUST preserve strict typing and avoid \`any\` unless explicitly required.
+  \`\`\`ts
+  // ✓ const value: unknown = input; if (typeof value === 'string') use(value);
+  // ✗ const value: any = input;
+  \`\`\`
 - SHOULD prefer \`unknown\` + type guards and minimize unsafe assertions.
 - SHOULD model state with discriminated unions and readonly types.
+  \`\`\`ts
+  // ✓ type State = { status: 'loading' } | { status: 'ok'; data: T } | { status: 'error'; err: Error }
+  // ✗ type State = { status: string; data?: T; err?: Error }
+  \`\`\`
 `,
 };
 

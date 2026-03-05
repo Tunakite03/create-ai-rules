@@ -9,7 +9,15 @@ const PYTHON_RULES = {
 `,
    strict: `## Python
 - MUST type public interfaces and avoid bare \`except\`.
+  \`\`\`python
+  # ✓ except ValueError as e: raise RuntimeError('context') from e
+  # ✗ except: pass
+  \`\`\`
 - SHOULD use context managers for resources and structured logging.
+  \`\`\`python
+  # ✓ with open(path) as f: data = f.read()
+  # ✗ f = open(path); data = f.read()  # no close guarantee
+  \`\`\`
 - SHOULD profile before major performance optimizations.
 `,
 };

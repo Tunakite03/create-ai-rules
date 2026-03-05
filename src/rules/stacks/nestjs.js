@@ -1,16 +1,33 @@
 const NESTJS_RULES = {
    minimal: `## NestJS
-- Keep modules feature-oriented and validate DTOs.
+- Keep modules feature-oriented; controllers thin, services testable.
+- Validate DTOs at the boundary. Never trust raw request payloads.
 `,
    standard: `## NestJS
-- Keep modules/controllers/services feature-scoped.
-- Validate DTOs with pipes and class-validator/zod as project already uses.
-- Keep business logic in services, not controllers.
+- One module per feature domain. Controllers handle HTTP only; logic lives in services.
+- Validate all DTOs with \`ValidationPipe\` + class-validator or Zod — never in controller bodies.
+- Use custom exception filters to map domain errors to consistent HTTP responses.
+- Inject dependencies via constructor; avoid \`ModuleRef.get()\` for regular service wiring.
+- Use \`@UseGuards\` / \`@UseInterceptors\` at controller or global scope — not inline in methods.
 `,
    strict: `## NestJS
-- MUST keep feature boundaries clear across module/controller/service layers.
-- MUST validate DTO input and map domain errors predictably.
-- SHOULD keep controllers thin and services testable.
+- MUST enforce module/controller/service layer separation — no business logic in controllers.
+  \`\`\`ts
+  // ✓ @Get(':id') async getUser(@Param('id') id: string) { return this.userService.findById(id); }
+  // ✗ @Get(':id') async getUser(@Param('id') id: string) { return this.repo.findOne({ where: { id } }); }
+  \`\`\`
+- MUST validate DTOs via \`ValidationPipe\` (global) or per-route. Never trust raw \`@Body()\`.
+  \`\`\`ts
+  // ✓ app.useGlobalPipes(new ValidationPipe({ whitelist: true, forbidNonWhitelisted: true }));
+  // ✗ class CreateUserDto { name: string }  // no @IsString(), no validation
+  \`\`\`
+- MUST map domain errors through a global \`ExceptionFilter\` — never \`throw new HttpException\` deep in services.
+  \`\`\`ts
+  // ✓ throw new UserNotFoundError(id);  // caught by DomainExceptionFilter → 404
+  // ✗ throw new NotFoundException(\`User \${id} not found\`);  // couples service to HTTP
+  \`\`\`
+- SHOULD scope providers to the correct lifecycle (\`REQUEST\` for per-request state, default singleton for stateless services).
+- SHOULD use interceptors for cross-cutting concerns (logging, response transforms) — not ad-hoc in services.
 `,
 };
 

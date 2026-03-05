@@ -12,10 +12,7 @@ export function runRuleChecks() {
    const warnings = [];
 
    const hasNoNewDeps = has(/Do NOT add new dependencies unless asked/i, text);
-   const hasHardLibRequirement = has(
-      /Use\s+`?(Zod|Joi|orjson|ujson|Zustand|Jotai)`?.*(must|always|instead)/i,
-      text
-   );
+   const hasHardLibRequirement = has(/Use\s+`?(Zod|Joi|orjson|ujson|Zustand|Jotai)`?.*(must|always|instead)/i, text);
 
    if (hasNoNewDeps && hasHardLibRequirement) {
       errors.push('Dependency conflict: forbids new dependencies but also requires specific libraries.');
@@ -31,6 +28,22 @@ export function runRuleChecks() {
 
    if (has(/\u00C3|\u00E2|\uFFFD/, text)) {
       warnings.push('Potential encoding artifacts detected (mojibake).');
+   }
+
+   // Warn when the total output likely exceeds a useful context hint size.
+   const estimatedTokens = Math.round(text.length / 4);
+   if (estimatedTokens > 2000) {
+      warnings.push(
+         `Output is large (~${estimatedTokens} estimated tokens). Consider using a lower verbosity or fewer stacks.`,
+      );
+   }
+
+   // Detect duplicate section headers that may confuse AI context.
+   const headers = [...text.matchAll(/^## (.+)/gm)].map((m) => m[1].trim());
+   const seen = new Set();
+   const dupes = headers.filter((h) => (seen.has(h) ? true : (seen.add(h), false)));
+   if (dupes.length > 0) {
+      warnings.push(`Duplicate section headers found: ${dupes.join(', ')}.`);
    }
 
    return {

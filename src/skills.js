@@ -28,6 +28,9 @@ Rules:
 - Body: explain **WHY**, not what (the diff shows what).
 - Footer: \`Closes #123\` or \`Breaking change: <description>\`.
 
+## Project Notes
+<!-- Add project-specific branch naming, required reviewers, merge strategy, or CI gates here. -->
+
 Examples:
 \`\`\`
 feat(auth): add OAuth2 login with Google
@@ -80,6 +83,9 @@ didn't exist in the DB. Added explicit null-check + 404 response.
 - Don't fix symptoms — find the root cause.
 - Don't suppress errors with try/catch without understanding them.
 - Don't assume — verify every assumption with evidence.
+
+## Project Notes
+<!-- Add project-specific debugging tips, common pitfalls, or environment quirks here. -->
 `;
 
    files['.github/skills/code-review.md'] = `# Skill: Code Review
@@ -120,6 +126,9 @@ Fix: <suggested improvement with code>
 - Don't nitpick style if a formatter/linter handles it.
 - Don't approve without reading. "LGTM" without review is harmful.
 - Don't block on subjective preferences. Distinguish opinion from rule.
+
+## Project Notes
+<!-- Add project-specific review criteria, team conventions, or required checks here. -->
 `;
 
    files['.github/skills/api-design.md'] = `# Skill: Design a REST API

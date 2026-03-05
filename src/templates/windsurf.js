@@ -11,26 +11,13 @@ export function templatesWindsurf({ stacks, minimal, full = false, verbosity = '
       `
 ## Windsurf-Specific Behavior
 
-### Workflow
-${renderBullets([
-         ...sharedBehavior.readBeforeWrite,
-         'Plan your approach before writing code.',
-         'If unsure about context, ask before assuming.',
-      ])}
-
-### Code Changes
-${renderBullets([
-         ...sharedBehavior.minimalDiff,
-         'Follow existing patterns in the codebase exactly.',
-         'Verify changes compile and pass lint before finishing.',
-      ])}
-
 ### Communication
 ${renderBullets([
-         'Explain your reasoning before showing code.',
-         'When multiple approaches exist, briefly list trade-offs.',
-         'Flag potential risks or side effects proactively.',
-      ])}
+   'Explain your reasoning before showing code.',
+   'When multiple approaches exist, briefly list trade-offs.',
+   'Flag potential risks or side effects proactively.',
+   'When uncertainty exists, state assumptions clearly before proceeding.',
+])}
 `;
 
    if (!minimal) {

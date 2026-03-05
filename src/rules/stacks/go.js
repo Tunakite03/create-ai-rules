@@ -9,7 +9,15 @@ const GO_RULES = {
 `,
    strict: `## Go
 - MUST check and wrap errors at call sites.
+  \`\`\`go
+  // ✓ if err != nil { return fmt.Errorf("load config: %w", err) }
+  // ✗ if err != nil { return err }  // loses context
+  \`\`\`
 - MUST pass context for I/O and cancellation.
+  \`\`\`go
+  // ✓ func FetchUser(ctx context.Context, id string) (*User, error)
+  // ✗ func FetchUser(id string) (*User, error)  // no cancellation
+  \`\`\`
 - SHOULD bound goroutines and protect shared state.
 `,
 };

@@ -34,19 +34,8 @@
 
 ## Windsurf-Specific Behavior
 
-### Workflow
-- Read existing files and understand project structure before making changes.
-- Follow existing patterns and conventions. Do not introduce new architecture unless requested.
-- Plan your approach before writing code.
-- If unsure about context, ask before assuming.
-
-### Code Changes
-- Make minimal, focused changes. Avoid unrelated refactors.
-- Add tests for new logic or bug fixes.
-- Follow existing patterns in the codebase exactly.
-- Verify changes compile and pass lint before finishing.
-
 ### Communication
 - Explain your reasoning before showing code.
 - When multiple approaches exist, briefly list trade-offs.
 - Flag potential risks or side effects proactively.
+- When uncertainty exists, state assumptions clearly before proceeding.
