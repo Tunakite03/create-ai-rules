@@ -1,6 +1,6 @@
 {
    "name": "create-ai-rules",
-   "version": "1.16.0",
+   "version": "1.17.0",
    "description": "CLI to scaffold AI coding rules & instructions for GitHub Copilot, Cursor, Claude Code, Windsurf, Cline and more",
    "type": "module",
    "bin": {
