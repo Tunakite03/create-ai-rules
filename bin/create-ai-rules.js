@@ -20,15 +20,19 @@ const FLAGS = new Set(argv.filter((a) => a.startsWith('-')));
 // Parse --stack=<name> from argv
 const stackArg = argv.find((a) => a.startsWith('--stack='));
 const stackValue = stackArg ? stackArg.split('=')[1] : null;
+const verbosityArg = argv.find((a) => a.startsWith('--verbosity='));
+const verbosityValue = verbosityArg ? verbosityArg.split('=')[1] : null;
 
 const opts = {
    yes: FLAGS.has('--yes') || FLAGS.has('-y'),
    force: FLAGS.has('--force') || FLAGS.has('-f'),
    minimal: FLAGS.has('--minimal'),
+   full: FLAGS.has('--full'),
    checkRules: FLAGS.has('--check-rules'),
    help: FLAGS.has('--help') || FLAGS.has('-h'),
    version: FLAGS.has('--version') || FLAGS.has('-v'),
    stack: stackValue,
+   verbosity: verbosityValue,
 };
 
 // --- Help & Version ---
@@ -50,6 +54,8 @@ if (opts.help) {
     -y, --yes           Accept defaults (Copilot + Generic, TypeScript stack)
     -f, --force         Overwrite existing files
     --stack=<name>      Set stack(s): ts, react, node, nestjs, python, unity (comma-separated, used with -y)
+    --full              Include extended stack-specific rule sections
+    --verbosity=<mode>  Rule detail profile: minimal, standard, strict
     --minimal           Skip optional files (prompts, skills, extras)
     --check-rules       Validate generated base rules for conflicts
     -h, --help          Show this help
@@ -113,6 +119,8 @@ async function main() {
    let selectedTargets = [];
    let stacks = ['ts'];
    let minimal = opts.minimal;
+   let full = opts.full;
+   let verbosity = ['minimal', 'standard', 'strict'].includes(opts.verbosity) ? opts.verbosity : 'standard';
 
    if (opts.yes) {
       selectedTargets = ['copilot', 'generic'];
@@ -123,7 +131,8 @@ async function main() {
          if (parsed.length > 0) stacks = parsed;
       }
       const stackLabels = stacks.map((k) => STACKS.find((s) => s.key === k)?.label ?? k).join(', ');
-      console.log(dim(`\nUsing defaults: Copilot + Generic, ${stackLabels} stack.\n`));
+      console.log(dim(`\nUsing defaults: Copilot + Generic, ${stackLabels} stack.`));
+      console.log(dim(`Mode: ${full ? 'full (extended)' : 'core-only'}, verbosity: ${verbosity}.\n`));
    } else {
       // -- 1. Select targets --
       const chosenTargets = await selectMulti('1. Select targets', TARGETS);
@@ -140,9 +149,28 @@ async function main() {
       ];
       const chosenMinimal = await selectOne('3. Minimal mode?', minimalOptions, 0);
       minimal = chosenMinimal.value;
+
+      const fullOptions = [
+         { label: 'Core only (recommended)', value: false },
+         { label: 'Full mode (include stack-extended rules)', value: true },
+      ];
+      const chosenFull = await selectOne('4. Rule mode?', fullOptions, 0);
+      full = chosenFull.value;
+
+      const verbosityOptions = [
+         { label: 'Minimal  — shortest output', value: 'minimal' },
+         { label: 'Standard — balanced detail', value: 'standard' },
+         { label: 'Strict   — strongest constraints', value: 'strict' },
+      ];
+      const verbosityIndex = Math.max(
+         verbosityOptions.findIndex((item) => item.value === verbosity),
+         1
+      );
+      const chosenVerbosity = await selectOne('5. Verbosity profile?', verbosityOptions, verbosityIndex);
+      verbosity = chosenVerbosity.value;
    }
 
-   const cfg = { stacks, minimal };
+   const cfg = { stacks, minimal, full, verbosity };
 
    // -- Merge all files from selected targets --
    const merged = {};
@@ -186,4 +214,3 @@ main().catch((err) => {
    console.error(`\n${bold('Error:')} ${err?.message ?? err}`);
    process.exit(1);
 });
-

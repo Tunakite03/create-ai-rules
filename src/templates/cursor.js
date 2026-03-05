@@ -2,7 +2,7 @@ import { baseRules } from '../rules.js';
 import { buildSkills } from '../skills.js';
 
 // --- Cursor (comprehensive .mdc rules) ---
-export function templatesCursor({ stacks, minimal }) {
+export function templatesCursor({ stacks, minimal, full = false, verbosity = 'standard' }) {
    const files = {};
 
    files['.cursor/rules/base.mdc'] = `---
@@ -10,7 +10,7 @@ description: Base coding rules for AI assistant
 globs: 
 alwaysApply: true
 ---
-${baseRules({ stacks })}
+${baseRules({ stacks, full, verbosity })}
 `;
 
    files['.cursor/rules/style.mdc'] = `---
