@@ -7,11 +7,11 @@ function instructionHeader(applyTo) {
 }
 
 // --- GitHub Copilot (comprehensive) ---
-export function templatesCopilot({ stacks, minimal }) {
+export function templatesCopilot({ stacks, minimal, full = false, verbosity = 'standard' }) {
    const files = {};
 
    // Main instructions file
-   files['.github/copilot-instructions.md'] = baseRules({ stacks });
+   files['.github/copilot-instructions.md'] = baseRules({ stacks, full, verbosity });
 
    // --- Granular instruction files ---
 

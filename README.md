@@ -31,8 +31,9 @@ npx create-ai-rules --help
 Khi chạy không dùng `--yes`, CLI sẽ đi theo luồng tương tác:
 1. Chọn target(s) muốn sinh rules.
 2. Chọn tech stack(s).
-3. Chọn chế độ minimal/full.
-4. Nếu có chọn Cline: chọn bật/tắt step-by-step thinking.
+3. Chọn chế độ minimal (file output) hay đầy đủ prompts/skills.
+4. Chọn rule mode: core-only hoặc full (kèm stack-extended).
+5. Chọn verbosity profile: minimal/standard/strict.
 
 Phím điều hướng:
 - `↑/↓`: di chuyển
@@ -49,8 +50,10 @@ Các cờ chính (đồng bộ với `bin/create-ai-rules.js`):
   Ghi đè file đã tồn tại.
 - `--minimal`  
   Chỉ sinh file cốt lõi, bỏ qua prompts/skills/extras.
-- `--cline-think`  
-  Bật hướng dẫn step-by-step thinking cho target Cline.
+- `--full`  
+  Bật extended stack sections (core luôn được include).
+- `--verbosity=<minimal|standard|strict>`  
+  Chọn profile độ chi tiết để giảm token dư thừa.
 - `--stack=<name[,name2,...]>`  
   Chọn stack khi dùng `--yes` (hỗ trợ danh sách ngăn cách bằng dấu phẩy).
 - `-h, --help`  
@@ -99,10 +102,16 @@ Ghi đè file cũ và chỉ tạo core files:
 npx create-ai-rules --yes --force --minimal
 ```
 
-Tạo rule cho Cline có step-by-step thinking (interactive hoặc kết hợp target phù hợp):
+Sinh output core-only, profile ngắn gọn: 
 
 ```bash
-npx create-ai-rules --cline-think
+npx create-ai-rules --yes --verbosity=minimal
+```
+
+Sinh đầy đủ stack-extended rule sections:
+
+```bash
+npx create-ai-rules --yes --stack=react,node --full --verbosity=strict
 ```
 
 ## Best practices for AI rules

@@ -3,11 +3,11 @@ import { buildSkills } from '../skills.js';
 import { renderBullets, sharedBehavior } from './shared-behavior.js';
 
 // --- Windsurf (comprehensive) ---
-export function templatesWindsurf({ stacks, minimal }) {
+export function templatesWindsurf({ stacks, minimal, full = false, verbosity = 'standard' }) {
    const files = {};
 
    files['.windsurfrules'] =
-      baseRules({ stacks }) +
+      baseRules({ stacks, full, verbosity }) +
       `
 ## Windsurf-Specific Behavior
 

@@ -3,11 +3,11 @@ import { buildSkills } from '../skills.js';
 import { renderBullets, sharedBehavior } from './shared-behavior.js';
 
 // --- Generic / Agents (comprehensive) ---
-export function templatesGeneric({ stacks, minimal }) {
+export function templatesGeneric({ stacks, minimal, full = false, verbosity = 'standard' }) {
    const files = {};
 
    files['AGENTS.md'] =
-      baseRules({ stacks }) +
+      baseRules({ stacks, full, verbosity }) +
       `
 ## Agent Behavior Guidelines
 

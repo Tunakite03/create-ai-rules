@@ -3,11 +3,11 @@ import { buildSkills } from '../skills.js';
 import { renderBullets, sharedBehavior } from './shared-behavior.js';
 
 // --- Cline (comprehensive) ---
-export function templatesCline({ stacks, minimal }) {
+export function templatesCline({ stacks, minimal, full = false, verbosity = 'standard' }) {
    const files = {};
 
    let content =
-      baseRules({ stacks }) +
+      baseRules({ stacks, full, verbosity }) +
       `
 ## Cline-Specific Behavior
 
