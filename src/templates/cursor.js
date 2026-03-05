@@ -1,8 +1,9 @@
 import { baseRules } from '../rules.js';
 import { buildSkills } from '../skills.js';
+import { renderBullets, sharedBehavior } from './shared-behavior.js';
 
 // --- Cursor (comprehensive .mdc rules) ---
-export function templatesCursor({ stacks, minimal }) {
+export function templatesCursor({ stacks, minimal, full = false, verbosity = 'standard' }) {
    const files = {};
 
    files['.cursor/rules/base.mdc'] = `---
@@ -10,7 +11,7 @@ description: Base coding rules for AI assistant
 globs: 
 alwaysApply: true
 ---
-${baseRules({ stacks })}
+${baseRules({ stacks, full, verbosity })}
 `;
 
    files['.cursor/rules/style.mdc'] = `---
@@ -21,10 +22,11 @@ alwaysApply: true
 # Style & Readability
 
 ## Workflow
-- Read existing code BEFORE writing. Match current patterns.
-- Plan your approach before coding. Think step-by-step.
-- When editing: propose the SMALLEST viable diff.
-- If unsure about context: ask instead of guessing.
+${renderBullets([
+         ...sharedBehavior.readBeforeWrite,
+         'Plan your approach before coding. Think step-by-step.',
+         'If unsure about context: ask instead of guessing.',
+      ])}
 
 ## Code Style
 - Small functions (< 40 lines). Extract helpers aggressively.

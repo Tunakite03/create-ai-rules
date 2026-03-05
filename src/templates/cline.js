@@ -1,26 +1,28 @@
 import { baseRules } from '../rules.js';
 import { buildSkills } from '../skills.js';
+import { renderBullets, sharedBehavior } from './shared-behavior.js';
 
 // --- Cline (comprehensive) ---
-export function templatesCline({ stacks, minimal }) {
+export function templatesCline({ stacks, minimal, full = false, verbosity = 'standard' }) {
    const files = {};
 
    let content =
-      baseRules({ stacks }) +
+      baseRules({ stacks, full, verbosity }) +
       `
 ## Cline-Specific Behavior
 
 ### Workflow
-- ALWAYS read relevant files before making any changes.
-- Propose a detailed plan before implementing.
-- Execute changes incrementally - one file at a time.
-- Verify each change compiles before moving to the next.
+${renderBullets([
+         ...sharedBehavior.readBeforeWrite,
+         'Propose a detailed plan before implementing.',
+         'Execute changes incrementally - one file at a time.',
+      ])}
 
 ### Code Quality
-- Follow existing code patterns and conventions exactly.
-- Keep diffs minimal and focused on the task.
-- Do not refactor or clean up unrelated code.
-- Add tests for new features and bug fixes.
+${renderBullets([
+         ...sharedBehavior.minimalDiff,
+         'Follow existing code patterns and conventions exactly.',
+      ])}
 
 ### Error Recovery
 - If a change breaks something, explain what went wrong.
@@ -28,10 +30,12 @@ export function templatesCline({ stacks, minimal }) {
 - Never leave the codebase in a broken state.
 
 ### Communication
-- Show your plan before executing.
-- Explain each significant change as you make it.
-- Summarize all changes when done.
-- Flag any concerns or follow-up items.
+${renderBullets([
+         'Show your plan before executing.',
+         'Explain each significant change as you make it.',
+         'Summarize all changes when done.',
+         'Flag any concerns or follow-up items.',
+      ])}
 `;
 
    files['.clinerules'] = content;

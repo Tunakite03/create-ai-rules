@@ -17,19 +17,31 @@ const pkg = JSON.parse(await fs.readFile(path.join(__dirname, '..', 'package.jso
 const argv = process.argv.slice(2);
 const FLAGS = new Set(argv.filter((a) => a.startsWith('-')));
 
-// Parse --stack=<name> from argv
+// Parse --stack=<name,...> from argv
 const stackArg = argv.find((a) => a.startsWith('--stack='));
 const stackValue = stackArg ? stackArg.split('=')[1] : null;
+const verbosityArg = argv.find((a) => a.startsWith('--verbosity='));
+const verbosityValue = verbosityArg ? verbosityArg.split('=')[1] : null;
 
 const opts = {
    yes: FLAGS.has('--yes') || FLAGS.has('-y'),
    force: FLAGS.has('--force') || FLAGS.has('-f'),
    minimal: FLAGS.has('--minimal'),
+   full: FLAGS.has('--full'),
    checkRules: FLAGS.has('--check-rules'),
    help: FLAGS.has('--help') || FLAGS.has('-h'),
    version: FLAGS.has('--version') || FLAGS.has('-v'),
    stack: stackValue,
+   verbosity: verbosityValue,
 };
+
+const stackKeys = STACKS.map((stack) => stack.key);
+const stackLineWidth = Math.max(...stackKeys.map((key) => key.length));
+const stackHelpFlagList = stackKeys.join(', ');
+const stackHelpList = STACKS.map((stack) => {
+   const defaultSuffix = stack.key === 'ts' ? ' — default' : '';
+   return `    ${stack.key.padEnd(stackLineWidth)}   ${stack.label}${defaultSuffix}`;
+}).join('\n');
 
 // --- Help & Version ---
 if (opts.version) {
@@ -45,11 +57,13 @@ if (opts.help) {
   ${bold('Usage')}
     npx create-ai-rules          Interactive mode
     npx create-ai-rules -y       Quick defaults (Copilot + Generic, TypeScript)
+    npx create-ai-rules -y --stack=ts,node,go
 
   ${bold('Flags')}
     -y, --yes           Accept defaults (Copilot + Generic, TypeScript stack)
     -f, --force         Overwrite existing files
-    --stack=<name>      Set stack(s): ts, react, node, nestjs, python, unity (comma-separated, used with -y)
+    --stack=<name,...>  Set stack(s): ts,react,node,nestjs,python,unity,go,flutter (used with -y)
+
     --minimal           Skip optional files (prompts, skills, extras)
     --check-rules       Validate generated base rules for conflicts
     -h, --help          Show this help
@@ -65,14 +79,7 @@ if (opts.help) {
     Generic          AGENTS.md
 
   ${bold('Stacks')}
-    ts               TypeScript (generic) — default
-    react            React / Next.js
-    node             Node.js API
-    nestjs           NestJS
-    python           Python
-    unity            Unity (C#)
-    go               Go (Golang)
-    flutter          Flutter (Dart)
+${stackHelpList}
 
   ${bold('Interactive navigation')}
     ↑/↓   Move cursor
@@ -121,17 +128,49 @@ async function main() {
    let selectedTargets = [];
    let stacks = ['ts'];
    let minimal = opts.minimal;
+   let full = opts.full;
+   let verbosity = ['minimal', 'standard', 'strict'].includes(opts.verbosity) ? opts.verbosity : 'standard';
 
    if (opts.yes) {
       selectedTargets = ['copilot', 'generic'];
-      // --stack=<name> accepts comma-separated values, overrides the default
+      // --stack accepts comma-separated values, overrides the default
       const validStacks = STACKS.map((s) => s.key);
       if (opts.stack) {
-         const parsed = opts.stack.split(',').filter((s) => validStacks.includes(s));
-         if (parsed.length > 0) stacks = parsed;
+         const requestedStacks = opts.stack
+            .split(',')
+            .map((s) => s.trim())
+            .filter(Boolean);
+
+         const { valid: parsedValid, invalid: parsedInvalid } = requestedStacks.reduce(
+            (acc, stackKey) => {
+               if (validStacks.includes(stackKey)) {
+                  acc.valid.push(stackKey);
+               } else {
+                  acc.invalid.push(stackKey);
+               }
+               return acc;
+            },
+            { valid: [], invalid: [] },
+         );
+
+         if (parsedInvalid.length > 0) {
+            console.warn(
+               `${yellow('Warning:')} Invalid stack(s): ${parsedInvalid.join(', ')}. Supported stacks: ${validStacks.join(', ')}.`,
+            );
+         }
+
+         if (parsedValid.length === 0) {
+            console.error(
+               `${bold('Error:')} All provided stacks are invalid. Use one or more of: ${validStacks.join(', ')}.`,
+            );
+            process.exit(1);
+         }
+
+         stacks = parsedValid;
       }
       const stackLabels = stacks.map((k) => STACKS.find((s) => s.key === k)?.label ?? k).join(', ');
-      console.log(dim(`\nUsing defaults: Copilot + Generic, ${stackLabels} stack.\n`));
+      console.log(dim(`\nUsing defaults: Copilot + Generic, ${stackLabels} stack.`));
+      console.log(dim(`Mode: ${full ? 'full (extended)' : 'core-only'}, verbosity: ${verbosity}.\n`));
    } else {
       // -- 1. Select targets --
       const chosenTargets = await selectMulti('1. Select targets', TARGETS);
@@ -148,9 +187,28 @@ async function main() {
       ];
       const chosenMinimal = await selectOne('3. Minimal mode?', minimalOptions, 0);
       minimal = chosenMinimal.value;
+
+      const fullOptions = [
+         { label: 'Core only (recommended)', value: false },
+         { label: 'Full mode (include stack-extended rules)', value: true },
+      ];
+      const chosenFull = await selectOne('4. Rule mode?', fullOptions, 0);
+      full = chosenFull.value;
+
+      const verbosityOptions = [
+         { label: 'Minimal  — shortest output', value: 'minimal' },
+         { label: 'Standard — balanced detail', value: 'standard' },
+         { label: 'Strict   — strongest constraints', value: 'strict' },
+      ];
+      const verbosityIndex = Math.max(
+         verbosityOptions.findIndex((item) => item.value === verbosity),
+         1
+      );
+      const chosenVerbosity = await selectOne('5. Verbosity profile?', verbosityOptions, verbosityIndex);
+      verbosity = chosenVerbosity.value;
    }
 
-   const cfg = { stacks, minimal };
+   const cfg = { stacks, minimal, full, verbosity };
 
    // -- Merge all files from selected targets --
    const merged = {};
@@ -194,4 +252,3 @@ main().catch((err) => {
    console.error(`\n${bold('Error:')} ${err?.message ?? err}`);
    process.exit(1);
 });
-
