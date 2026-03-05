@@ -1,5 +1,6 @@
 import { baseRules } from '../rules.js';
 import { buildSkills } from '../skills.js';
+import { renderBullets, sharedBehavior } from './shared-behavior.js';
 
 // --- Claude Code (comprehensive) ---
 export function templatesClaude({ stacks, minimal, full = false, verbosity = 'standard' }) {
@@ -11,28 +12,26 @@ export function templatesClaude({ stacks, minimal, full = false, verbosity = 'st
 ## Claude Code Behavior
 
 ### Before Writing Code
-- Read existing files and understand the project structure.
-- Check existing patterns, naming conventions, and architecture.
-- Look at related tests to understand expected behavior.
-- Never invent new architectural patterns without being asked.
+${renderBullets([
+         ...sharedBehavior.readBeforeWrite,
+         'Check related tests to understand expected behavior.',
+      ])}
 
 ### While Writing Code
-- Make minimal, focused changes. One logical concept per edit.
-- Follow the established code style exactly (indentation, naming, patterns).
-- Add comprehensive error handling for all new code paths.
-- Include tests for new functionality.
+${renderBullets([
+         ...sharedBehavior.minimalDiff,
+         'Follow the established code style exactly (indentation, naming, patterns).',
+         'Add comprehensive error handling for all new code paths.',
+      ])}
 
 ### After Writing Code
-- Verify changes compile/lint successfully.
-- Run existing tests to check for regressions.
-- Summarize what was changed and why.
-- Flag any risks, trade-offs, or follow-up items.
+${renderBullets(sharedBehavior.verification)}
 
 ### Communication Style
-- Be direct and concise. Lead with the answer.
-- Show code changes with file paths.
-- Explain non-obvious decisions.
-- When uncertain, say so and explain your reasoning.
+${renderBullets([
+         ...sharedBehavior.communication,
+         'Lead with the answer and show code changes with file paths.',
+      ])}
 `;
 
    if (!minimal) {
