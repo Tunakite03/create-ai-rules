@@ -1,5 +1,6 @@
 import { baseRules } from '../rules.js';
 import { buildSkills } from '../skills.js';
+import { renderBullets, sharedBehavior } from './shared-behavior.js';
 
 // --- Generic / Agents (comprehensive) ---
 export function templatesGeneric({ stacks, minimal }) {
@@ -11,20 +12,20 @@ export function templatesGeneric({ stacks, minimal }) {
 ## Agent Behavior Guidelines
 
 ### Before Starting
-- Read and understand the project structure.
-- Identify existing patterns, conventions, and dependencies.
-- Ask for clarification if the task is ambiguous.
+${renderBullets([
+         ...sharedBehavior.readBeforeWrite,
+         'Identify existing dependencies before making changes.',
+         'Ask for clarification if the task is ambiguous.',
+      ])}
 
 ### During Implementation
-- Follow existing patterns exactly. Do not introduce new ones.
-- Make the smallest possible change that solves the problem.
-- Add tests for new functionality.
-- Handle errors and edge cases explicitly.
+${renderBullets([
+         ...sharedBehavior.minimalDiff,
+         'Handle errors and edge cases explicitly.',
+      ])}
 
 ### After Completing
-- Verify all changes compile and tests pass.
-- Summarize what was changed and why.
-- Note any risks, trade-offs, or follow-up needed.
+${renderBullets(sharedBehavior.verification)}
 
 ### Note
 This is a tool-agnostic rules file. If your IDE uses a specific

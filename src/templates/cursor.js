@@ -1,5 +1,6 @@
 import { baseRules } from '../rules.js';
 import { buildSkills } from '../skills.js';
+import { renderBullets, sharedBehavior } from './shared-behavior.js';
 
 // --- Cursor (comprehensive .mdc rules) ---
 export function templatesCursor({ stacks, minimal }) {
@@ -21,10 +22,11 @@ alwaysApply: true
 # Style & Readability
 
 ## Workflow
-- Read existing code BEFORE writing. Match current patterns.
-- Plan your approach before coding. Think step-by-step.
-- When editing: propose the SMALLEST viable diff.
-- If unsure about context: ask instead of guessing.
+${renderBullets([
+         ...sharedBehavior.readBeforeWrite,
+         'Plan your approach before coding. Think step-by-step.',
+         'If unsure about context: ask instead of guessing.',
+      ])}
 
 ## Code Style
 - Small functions (< 40 lines). Extract helpers aggressively.

@@ -11,7 +11,8 @@
       "src/"
    ],
    "scripts": {
-      "test": "node bin/create-ai-rules.js --help"
+      "test": "node --test",
+      "test:cli-help": "node bin/create-ai-rules.js --help"
    },
    "keywords": [
       "ai",
