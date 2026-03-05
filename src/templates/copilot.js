@@ -151,6 +151,89 @@ applyTo: "**/*.{tsx,jsx,css}"
 `;
    }
 
+   // Go-specific instruction file
+   if (stack === 'go') {
+      files['.github/instructions/05-go.instructions.md'] = `---
+applyTo: "**/*.go"
+---
+# Go Rules
+
+## Error Handling
+- Check errors immediately: \`if err != nil { return fmt.Errorf("context: %w", err) }\`.
+- Wrap errors with \`%w\` for context. Use \`errors.Is()\` / \`errors.As()\` for checking.
+- Never silently ignore errors. \`_ = fn()\` is a code smell.
+
+## Naming
+- Exported: \`PascalCase\`. Unexported: \`camelCase\`.
+- Interfaces: \`-er\` suffix for single-method (\`Reader\`, \`Writer\`).
+- Packages: short, lowercase, no underscores.
+- Avoid stutter: \`http.Server\` not \`http.HTTPServer\`.
+
+## Concurrency
+- Share memory by communicating (channels), not by sharing memory.
+- Always use \`sync.WaitGroup\` or \`errgroup.Group\` to wait for goroutines.
+- Never start a goroutine without a way to stop it.
+- Use \`context.Context\` for cancellation and timeouts.
+
+## Functions
+- Accept interfaces, return structs.
+- First param: \`ctx context.Context\` for I/O or cancellable ops.
+- Last return: \`error\` (by convention).
+- Use \`defer\` for cleanup.
+
+## Performance
+- Pre-allocate slices: \`make([]T, 0, cap)\`.
+- Use \`strings.Builder\` for concatenation.
+- No \`reflect\` in hot paths.
+- Profile with \`pprof\` before optimizing.
+
+## Testing
+- Table-driven tests with \`t.Run()\`.
+- \`httptest.NewServer\` for HTTP handler tests.
+- \`t.Cleanup()\` for teardown.
+`;
+   }
+
+   // Flutter-specific instruction file
+   if (stack === 'flutter') {
+      files['.github/instructions/05-flutter.instructions.md'] = `---
+applyTo: "**/*.dart"
+---
+# Flutter / Dart Rules
+
+## Widgets
+- Use \`const\` constructors wherever possible.
+- Prefer \`StatelessWidget\` when no mutable state needed.
+- Keep widgets small. Extract sub-widgets aggressively.
+- No business logic in widgets — delegate to controllers/blocs.
+
+## State Management
+- Keep state immutable — use \`copyWith()\` or \`freezed\`.
+- Dispose controllers/streams in \`dispose()\`.
+- Use \`AsyncValue\` for async state (loading, error, data).
+
+## Naming
+- Classes: \`PascalCase\`. Variables/functions: \`camelCase\`.
+- Files/packages: \`snake_case\`. Private: \`_camelCase\`.
+- Constants: \`camelCase\` (Dart convention, not UPPER_SNAKE).
+
+## Null Safety
+- Dart 3+ null safety enforced. Never use \`!\` unless provably safe.
+- Prefer \`??\` (null coalescing) and \`?.\` (null-aware access).
+
+## Performance
+- \`ListView.builder\` for long lists (never \`ListView(children:)\` with 100+ items).
+- Scope \`setState()\` to smallest widget. Avoid full-screen rebuilds.
+- Use \`RepaintBoundary\` for complex animations.
+- Profile with Flutter DevTools.
+
+## Architecture
+- Layers: Presentation → Application → Domain → Data.
+- Repository pattern for data access.
+- Navigation: \`go_router\` with typed routes.
+`;
+   }
+
    files['.github/instructions/10-typescript.instructions.md'] = `---
 applyTo: "**/*.{ts,tsx}"
 ---

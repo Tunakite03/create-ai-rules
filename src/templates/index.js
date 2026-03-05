@@ -62,4 +62,6 @@ export const STACKS = [
    { key: 'nestjs', label: 'NestJS' },
    { key: 'python', label: 'Python' },
    { key: 'unity', label: 'Unity (C#)' },
+   { key: 'go', label: 'Go (Golang)' },
+   { key: 'flutter', label: 'Flutter (Dart)' },
 ];

@@ -292,6 +292,99 @@ When implementing changes, always provide:
   - Suffixes: \`.module\`, \`.controller\`, \`.service\`, \`.dto\`, \`.entity\`, \`.guard\`, \`.pipe\`, \`.interceptor\`, \`.filter\`, \`.decorator\`.
 `;
 
+   const golang = `
+## Go
+- Follow [Effective Go](https://go.dev/doc/effective_go) and the Go Code Review Comments.
+- Use \`gofmt\` / \`goimports\` for formatting. No debates on style.
+- Naming:
+  - Short, concise names. \`r\` not \`reader\` in small scopes.
+  - Exported names: \`PascalCase\`. Unexported: \`camelCase\`.
+  - Interfaces: single-method = \`-er\` suffix (\`Reader\`, \`Writer\`, \`Closer\`).
+  - Packages: short, lowercase, no underscores. \`http\`, \`json\`, \`auth\`.
+  - Avoid package-level stutter: \`http.Server\` not \`http.HTTPServer\`.
+- Error handling:
+  - Check errors immediately: \`if err != nil { return fmt.Errorf("...: %w", err) }\`.
+  - Wrap errors with \`fmt.Errorf("context: %w", err)\` for stack context.
+  - Use \`errors.Is()\` and \`errors.As()\` for checking, not type assertions.
+  - Custom errors: implement \`Error() string\` interface.
+  - Never silently ignore errors: \`_ = doSomething()\` is a code smell.
+- Functions:
+  - Accept interfaces, return structs.
+  - First param \`ctx context.Context\` when function does I/O or is cancellable.
+  - Last return value is \`error\` (by convention).
+  - Prefer returning early to reduce nesting.
+- Concurrency:
+  - Don't communicate by sharing memory; share memory by communicating (channels).
+  - Always use \`sync.WaitGroup\` or \`errgroup.Group\` to wait for goroutines.
+  - Never start a goroutine without a way to stop it (context cancellation).
+  - Protect shared state with \`sync.Mutex\` — keep critical sections small.
+  - Use \`context.Context\` for cancellation and timeouts on all I/O operations.
+- Patterns:
+  - Use \`defer\` for cleanup (close files, unlock mutexes, flush buffers).
+  - Use table-driven tests with \`t.Run()\` subtests.
+  - Use \`struct embedding\` for composition, not inheritance.
+  - Prefer \`io.Reader\` / \`io.Writer\` interfaces for flexible I/O.
+- Performance:
+  - Pre-allocate slices with \`make([]T, 0, capacity)\` when size is known.
+  - Use \`strings.Builder\` for string concatenation in loops.
+  - Profile with \`pprof\` before optimizing. Measure, don't guess.
+  - Use \`sync.Pool\` for frequently allocated/freed objects in hot paths.
+  - Avoid \`reflect\` in performance-critical code.
+- Testing:
+  - Tests in same package: \`foo_test.go\` for white-box, \`foo_test\` package for black-box.
+  - Use \`testify/assert\` or stdlib for assertions.
+  - Use \`httptest.NewServer\` for HTTP handler testing.
+  - Use \`t.Cleanup()\` for test teardown, not \`defer\` in test body.
+`;
+
+   const flutter = `
+## Flutter / Dart
+- Use Dart 3+ with null safety. Never use \`!\` (null assertion) unless provably safe.
+- Naming:
+  - Classes, enums, typedefs, extensions: \`PascalCase\`.
+  - Variables, functions, parameters: \`camelCase\`.
+  - Libraries, packages, directories, source files: \`snake_case\`.
+  - Constants: \`camelCase\` (not UPPER_SNAKE — Dart convention).
+  - Private members: \`_camelCase\` prefix.
+- Widgets:
+  - Keep widgets small and focused. Extract sub-widgets aggressively.
+  - Use \`const\` constructors wherever possible for performance.
+  - Prefer \`StatelessWidget\` over \`StatefulWidget\` when no mutable state is needed.
+  - Never put business logic in widgets — delegate to controllers/notifiers/blocs.
+  - Use \`Key\` for widgets in lists or when Flutter needs to differentiate instances.
+- State Management:
+  - Choose one and be consistent: Riverpod (recommended), Bloc/Cubit, Provider.
+  - Keep state immutable — use \`copyWith()\` patterns or \`freezed\` package.
+  - Avoid global mutable singletons. Use DI or provider-based injection.
+  - Dispose controllers/streams in \`dispose()\` — never leak subscriptions.
+  - Use \`AsyncValue\` / \`AsyncNotifier\` for async state (loading, error, data).
+- Architecture:
+  - Separate layers: Presentation (widgets) → Application (controllers) → Domain (entities) → Data (repositories).
+  - Repository pattern for data access. Widgets never call APIs directly.
+  - Use \`freezed\` or sealed classes for discriminated union states.
+  - Navigation: use \`go_router\` or framework router with typed routes.
+- Performance:
+  - Use \`const\` constructors to prevent unnecessary rebuilds.
+  - Use \`ListView.builder\` / \`GridView.builder\` for long lists (never \`ListView(children: [...])\` with 100+ items).
+  - Avoid \`setState()\` on entire screen — scope rebuilds to the smallest widget.
+  - Use \`RepaintBoundary\` for complex animations or frequently changing UI regions.
+  - Minimize widget tree depth. Deep trees slow layout and painting.
+  - Profile with Flutter DevTools. Check for jank in the timeline view.
+- Async:
+  - Use \`async/await\` everywhere. No raw \`.then()\` chains.
+  - Handle errors: \`try/catch\` or \`AsyncValue\` — never let futures fail silently.
+  - Cancel streams and timers when the widget is disposed.
+- Testing:
+  - Unit tests for business logic (controllers, services, repositories).
+  - Widget tests for UI components (\`WidgetTester\`, \`find.byType\`, \`pump\`).
+  - Integration tests for critical user journeys.
+  - Mock dependencies with \`mocktail\` or \`mockito\`.
+- Platform:
+  - Use \`Platform.isAndroid\` / \`Platform.isIOS\` sparingly — prefer adaptive widgets.
+  - Responsive layouts: \`LayoutBuilder\`, \`MediaQuery\`, or \`responsive_framework\`.
+  - Handle platform channels safely — always handle \`MissingPluginException\`.
+`;
+
    const stackMap = {
       ts: common + ts,
       react: common + ts + react,
@@ -299,6 +392,8 @@ When implementing changes, always provide:
       nestjs: common + ts + nestjs,
       python: common + python,
       unity: common + unity,
+      go: common + golang,
+      flutter: common + flutter,
    };
 
    return stackMap[stack] || common + ts;

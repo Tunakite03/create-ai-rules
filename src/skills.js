@@ -82,6 +82,330 @@ didn't exist in the DB. Added explicit null-check + 404 response.
 - Don't assume — verify every assumption with evidence.
 `;
 
+   files['.github/skills/code-review.md'] = `# Skill: Code Review
+
+## Review Process
+1. **Understand** — Read the PR description and linked issue first.
+2. **Skim** — Get the big picture. Understand the shape of the change.
+3. **Deep dive** — Read each file carefully. Check logic, edge cases, naming.
+4. **Test mentally** — Trace the code path with real inputs (happy + unhappy).
+5. **Comment** — Be specific, suggest fixes, explain reasoning.
+
+## Severity Levels
+| Level | When to use |
+|-------|-------------|
+| \`🔴 critical\` | Bug, security flaw, data loss risk. Must fix before merge. |
+| \`🟡 warning\` | Performance issue, bad pattern, potential tech debt. Should fix. |
+| \`🔵 suggestion\` | Better approach exists, readability improvement. Nice to have. |
+| \`⚪ nit\` | Style, naming, formatting. Optional. |
+
+## What to Check
+- **Correctness**: Does the logic handle all cases? Edge cases?
+- **Security**: User input validated? Secrets exposed? SQL injection?
+- **Performance**: N+1 queries? Unbounded loops? Memory leaks?
+- **Naming**: Is every name clear? Would a new teammate understand?
+- **Tests**: Happy path + edge cases + error cases covered?
+- **Docs**: Public APIs documented? Breaking changes noted?
+
+## Comment Template
+\\\`\\\`\\\`
+[severity] file.ts:L42
+Issue: <what is wrong>
+Why: <why it matters>
+Fix: <suggested improvement with code>
+\\\`\\\`\\\`
+
+## Anti-patterns
+- Don't just say "this is wrong" — explain WHY and suggest a fix.
+- Don't nitpick style if a formatter/linter handles it.
+- Don't approve without reading. "LGTM" without review is harmful.
+- Don't block on subjective preferences. Distinguish opinion from rule.
+`;
+
+   files['.github/skills/api-design.md'] = `# Skill: Design a REST API
+
+## URL Conventions
+- Nouns, not verbs: \\\`/users\\\` not \\\`/getUsers\\\`.
+- Plural resource names: \\\`/users\\\`, \\\`/orders\\\`, \\\`/products\\\`.
+- Nest for relationships: \\\`/users/:id/orders\\\`.
+- Use kebab-case: \\\`/order-items\\\` not \\\`/orderItems\\\`.
+- Version prefix: \\\`/api/v1/users\\\`.
+
+## HTTP Methods
+| Method | Purpose | Idempotent | Response |
+|--------|---------|------------|----------|
+| GET | Read | Yes | 200, 404 |
+| POST | Create | No | 201, 400, 409 |
+| PUT | Full replace | Yes | 200, 404 |
+| PATCH | Partial update | No | 200, 404 |
+| DELETE | Remove | Yes | 204, 404 |
+
+## Response Format
+\\\`\\\`\\\`json
+// Success (single)
+{ "data": { "id": "1", "name": "Alice" } }
+
+// Success (list)
+{ "data": [...], "meta": { "page": 1, "limit": 20, "total": 142 } }
+
+// Error
+{ "error": { "code": "VALIDATION_ERROR", "message": "...", "details": [...] } }
+\\\`\\\`\\\`
+
+## Pagination
+- Use cursor-based for infinite scroll: \\\`?cursor=abc&limit=20\\\`.
+- Use offset-based for page navigation: \\\`?page=1&limit=20\\\`.
+- Always return total count and next cursor/page link.
+
+## Filtering & Sorting
+- Filter: \\\`?status=active&role=admin\\\`.
+- Sort: \\\`?sort=created_at:desc,name:asc\\\`.
+- Search: \\\`?q=search+term\\\`.
+
+## Checklist
+- [ ] All endpoints follow RESTful conventions.
+- [ ] Consistent response shape across all endpoints.
+- [ ] Pagination on all list endpoints.
+- [ ] Input validation with clear error messages.
+- [ ] Rate limiting on public endpoints.
+- [ ] API versioning strategy defined.
+- [ ] Authentication/authorization on protected routes.
+- [ ] OpenAPI/Swagger documentation generated.
+`;
+
+   files['.github/skills/create-migration.md'] = `# Skill: Create a Database Migration
+
+## Principles
+- Migrations are **immutable** once deployed. Never edit a merged migration.
+- Every migration must be **reversible** — include both \\\`up\\\` and \\\`down\\\`.
+- One logical change per migration file. Don't mix schema + data changes.
+- Test migrations against a copy of production data before deploying.
+
+## Safe Migration Patterns
+| Change | Safe approach |
+|--------|--------------|
+| Add column | Add as nullable or with default value |
+| Rename column | Add new → backfill → remove old (3 steps) |
+| Remove column | Stop reading → deploy → remove column |
+| Add index | Use \\\`CREATE INDEX CONCURRENTLY\\\` (Postgres) |
+| Change type | Add new column → migrate data → swap → drop old |
+| Add NOT NULL | Add column nullable → backfill → add constraint |
+
+## Migration Template
+\\\`\\\`\\\`
+-- Migration: <YYYY-MM-DD>_<description>
+-- Description: <what this migration does and WHY>
+
+-- UP
+ALTER TABLE users ADD COLUMN avatar_url TEXT DEFAULT NULL;
+CREATE INDEX CONCURRENTLY idx_users_avatar ON users(avatar_url) WHERE avatar_url IS NOT NULL;
+
+-- DOWN
+DROP INDEX IF EXISTS idx_users_avatar;
+ALTER TABLE users DROP COLUMN IF EXISTS avatar_url;
+\\\`\\\`\\\`
+
+## Zero-Downtime Checklist
+- [ ] No table locks on large tables (use concurrent operations).
+- [ ] New columns are nullable or have defaults (no breaking existing inserts).
+- [ ] Application code handles both old and new schema during rollout.
+- [ ] Data backfill runs as a separate step, not in the migration.
+- [ ] Rollback script tested and verified.
+- [ ] Migration tested against staging with production-like data volume.
+- [ ] Foreign keys added without locking (where possible).
+`;
+
+   files['.github/skills/docker-deploy.md'] = `# Skill: Docker & Deployment
+
+## Dockerfile Best Practices
+\\\`\\\`\\\`dockerfile
+# Multi-stage build for minimal production image
+FROM node:20-alpine AS builder
+WORKDIR /app
+COPY package*.json ./
+RUN npm ci --ignore-scripts
+COPY . .
+RUN npm run build
+
+FROM node:20-alpine AS runner
+WORKDIR /app
+RUN addgroup -g 1001 -S appgroup && adduser -S appuser -u 1001 -G appgroup
+COPY --from=builder /app/dist ./dist
+COPY --from=builder /app/node_modules ./node_modules
+COPY --from=builder /app/package.json ./
+USER appuser
+EXPOSE 3000
+CMD ["node", "dist/main.js"]
+\\\`\\\`\\\`
+
+## Docker Rules
+- Use multi-stage builds to minimize image size.
+- Pin base image versions (e.g., \\\`node:20.11-alpine\\\`, not \\\`node:latest\\\`).
+- Run as non-root user. Never run containers as root in production.
+- Use \\\`.dockerignore\\\` to exclude: \\\`node_modules\\\`, \\\`.git\\\`, \\\`.env\\\`, tests, docs.
+- One process per container. Use Docker Compose for multi-service setups.
+- Health checks: \\\`HEALTHCHECK CMD curl -f http://localhost:3000/health || exit 1\\\`.
+
+## Docker Compose Template
+\\\`\\\`\\\`yaml
+services:
+  app:
+    build: .
+    ports: ["3000:3000"]
+    env_file: .env
+    depends_on:
+      db: { condition: service_healthy }
+    restart: unless-stopped
+  db:
+    image: postgres:16-alpine
+    volumes: ["pgdata:/var/lib/postgresql/data"]
+    environment:
+      POSTGRES_DB: myapp
+      POSTGRES_USER: myapp
+      POSTGRES_PASSWORD: \${DB_PASSWORD}
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U myapp"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+volumes:
+  pgdata:
+\\\`\\\`\\\`
+
+## CI/CD Checklist
+- [ ] Linting and type checking pass.
+- [ ] All tests pass (unit + integration).
+- [ ] Docker image builds successfully.
+- [ ] Security scanning on image (Trivy, Snyk).
+- [ ] Environment variables documented and validated.
+- [ ] Database migrations run before deployment.
+- [ ] Health check endpoint verified post-deploy.
+- [ ] Rollback plan documented and tested.
+`;
+
+   files['.github/skills/write-docs.md'] = `# Skill: Write Documentation
+
+## README Structure
+\\\`\\\`\\\`markdown
+# Project Name
+> One-line description of what this project does.
+
+## Quick Start
+<3-5 steps to get running>
+
+## Features
+- Feature A — brief description
+- Feature B — brief description
+
+## Installation
+<detailed setup instructions>
+
+## Usage
+<code examples for common use cases>
+
+## API Reference
+<link to generated docs or brief reference>
+
+## Contributing
+<how to contribute, link to CONTRIBUTING.md>
+
+## License
+<license type>
+\\\`\\\`\\\`
+
+## Architecture Decision Record (ADR)
+\\\`\\\`\\\`markdown
+# ADR-<number>: <Title>
+- **Date**: YYYY-MM-DD
+- **Status**: proposed | accepted | deprecated | superseded
+- **Context**: What is the issue? Why do we need to make a decision?
+- **Decision**: What did we decide?
+- **Consequences**: What are the trade-offs? What do we gain and lose?
+- **Alternatives Considered**: What other options were evaluated?
+\\\`\\\`\\\`
+
+## Changelog Entry (Keep a Changelog format)
+\\\`\\\`\\\`markdown
+## [1.2.0] - YYYY-MM-DD
+### Added
+- New feature description.
+
+### Changed
+- Modified behavior description.
+
+### Fixed
+- Bug fix description. Closes #123.
+
+### Removed
+- Removed deprecated feature.
+\\\`\\\`\\\`
+
+## Checklist
+- [ ] README has Quick Start that works in \\\`< 5 minutes\\\`.
+- [ ] All public APIs documented with parameters, return types, examples.
+- [ ] Architecture decisions recorded as ADRs.
+- [ ] Changelog updated for every release.
+- [ ] Environment variables documented with types and defaults.
+- [ ] Diagrams for complex data flows or architecture.
+- [ ] No stale docs — update docs when changing code.
+`;
+
+   files['.github/skills/accessibility.md'] = `# Skill: Web Accessibility (WCAG 2.1 AA)
+
+## Semantic HTML
+- Use correct elements: \\\`<nav>\\\`, \\\`<main>\\\`, \\\`<section>\\\`, \\\`<article>\\\`, \\\`<aside>\\\`, \\\`<header>\\\`, \\\`<footer>\\\`.
+- One \\\`<h1>\\\` per page. Headings in order: h1 → h2 → h3 (no skipping).
+- Use \\\`<button>\\\` for actions, \\\`<a>\\\` for navigation. Never \\\`<div onClick>\\\`.
+- Use \\\`<ul>\\\`/\\\`<ol>\\\` for lists. Use \\\`<table>\\\` for tabular data.
+
+## Images & Media
+- All \\\`<img>\\\` must have \\\`alt\\\` text. Decorative images: \\\`alt=""\\\`.
+- Complex images (charts, diagrams) need extended descriptions.
+- Videos need captions. Audio needs transcripts.
+
+## Forms
+- Every input must have a visible \\\`<label>\\\` (or \\\`aria-label\\\`).
+- Group related fields with \\\`<fieldset>\\\` + \\\`<legend>\\\`.
+- Error messages linked to inputs via \\\`aria-describedby\\\`.
+- Required fields marked with \\\`aria-required="true"\\\`.
+- Focus moves to the first error on submit.
+
+## Keyboard Navigation
+- All interactive elements reachable via Tab key.
+- Visible focus indicator (never \\\`outline: none\\\` without replacement).
+- Escape closes modals/dropdowns. Enter/Space activates buttons.
+- Focus trapping inside modals (Tab cycles within modal).
+- Skip links: \\\`<a href="#main" class="sr-only focus:not-sr-only">Skip to content</a>\\\`.
+
+## Color & Contrast
+- Text contrast ratio: **4.5:1** minimum (AA). Large text: **3:1**.
+- Never use color alone to convey information (add icons, text, patterns).
+- Test with grayscale filter to verify.
+
+## ARIA Rules
+- First rule of ARIA: don't use ARIA if native HTML works.
+- \\\`aria-label\\\` for elements without visible text.
+- \\\`aria-live="polite"\\\` for dynamic content updates (toasts, loading).
+- \\\`role="alert"\\\` for error messages.
+- \\\`aria-expanded\\\` for collapsible sections and dropdowns.
+
+## Testing Tools
+- Lighthouse accessibility audit (Chrome DevTools).
+- axe DevTools browser extension.
+- Screen reader testing: VoiceOver (Mac), NVDA (Windows).
+- Keyboard-only navigation test.
+
+## Checklist
+- [ ] All images have appropriate alt text.
+- [ ] All form inputs have labels.
+- [ ] Color contrast meets WCAG AA (4.5:1).
+- [ ] All functionality accessible via keyboard.
+- [ ] Focus order is logical and visible.
+- [ ] No content conveyed by color alone.
+- [ ] ARIA used correctly (or not at all if native HTML suffices).
+- [ ] Tested with screen reader.
+`;
+
    // ── TypeScript / React / Node skills ─────────────────────────
 
    if (stack === 'ts' || stack === 'react' || stack === 'node' || stack === 'nestjs') {
