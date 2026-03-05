@@ -2,11 +2,11 @@ import { baseRules } from '../rules.js';
 import { buildSkills } from '../skills.js';
 
 // --- Cline (comprehensive) ---
-export function templatesCline({ stacks, minimal }) {
+export function templatesCline({ stacks, minimal, full = false, verbosity = 'standard' }) {
    const files = {};
 
    let content =
-      baseRules({ stacks }) +
+      baseRules({ stacks, full, verbosity }) +
       `
 ## Cline-Specific Behavior
 
