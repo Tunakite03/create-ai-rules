@@ -236,63 +236,229 @@ const unityRules = `
 
 const nestjsRules = `
 ## NestJS
-- Architecture:
-  - Follow modular architecture. Every feature = its own module.
-  - Module file structure: \`<feature>.module.ts\`, \`<feature>.controller.ts\`, \`<feature>.service.ts\`, \`<feature>.dto.ts\`, \`<feature>.entity.ts\`.
-  - Keep modules self-contained. Import/export only what is necessary.
-  - Use \`@Global()\` sparingly — only for truly app-wide modules (config, logging).
-- Controllers:
-  - Controllers handle HTTP only. No business logic — delegate to services.
-  - Use proper HTTP method decorators: \`@Get()\`, \`@Post()\`, \`@Put()\`, \`@Patch()\`, \`@Delete()\`.
-  - Use \`@Param()\`, \`@Query()\`, \`@Body()\` to extract request data — never access \`req\` directly.
-  - Always validate request bodies with DTOs + \`ValidationPipe\`.
-  - Return proper HTTP status codes: \`@HttpCode(HttpStatus.NO_CONTENT)\` for 204, etc.
-  - Use \`@ApiTags()\`, \`@ApiOperation()\`, \`@ApiResponse()\` for Swagger docs.
-- Services & Dependency Injection:
-  - All business logic lives in \`@Injectable()\` services.
-  - Inject dependencies via constructor. Never use \`ModuleRef\` unless absolutely necessary.
-  - Prefer constructor injection over property injection.
-  - Use custom providers (\`useFactory\`, \`useValue\`, \`useClass\`) for complex initialization.
-  - Scope: default singleton. Use \`Scope.REQUEST\` only when truly needed (it hurts performance).
-- DTOs & Validation:
-  - One DTO per operation: \`CreateUserDto\`, \`UpdateUserDto\`, \`UserResponseDto\`.
-  - Use \`class-validator\` decorators: \`@IsString()\`, \`@IsEmail()\`, \`@IsNotEmpty()\`, \`@MinLength()\`, etc.
-  - Use \`class-transformer\`: \`@Exclude()\`, \`@Expose()\`, \`@Transform()\` for response shaping.
-  - Use \`PartialType()\`, \`PickType()\`, \`OmitType()\`, \`IntersectionType()\` from \`@nestjs/mapped-types\`.
-  - Enable global \`ValidationPipe\` with \`whitelist: true\` and \`forbidNonWhitelisted: true\`.
-- Guards, Pipes, Interceptors, Filters:
-  - \`Guards\` for authorization (\`@UseGuards(AuthGuard)\`).
-  - \`Pipes\` for input transformation/validation (\`@UsePipes(ValidationPipe)\`).
-  - \`Interceptors\` for cross-cutting concerns (logging, caching, response mapping).
-  - \`Exception Filters\` for consistent error responses (\`@Catch()\`).
-  - Execution order: Middleware → Guards → Interceptors (before) → Pipes → Handler → Interceptors (after) → Filters (on error).
-- Database:
-  - Use TypeORM or Prisma. Follow the repository pattern.
-  - Entities in \`<feature>.entity.ts\`. Use \`@Entity()\`, \`@Column()\`, \`@PrimaryGeneratedColumn()\`.
-  - Use migrations for all schema changes. Never \`synchronize: true\` in production.
-  - Use transactions (\`QueryRunner\` or \`@Transaction()\`) for multi-step mutations.
-  - Use query builders for complex queries. Avoid raw SQL unless performance-critical.
-- Config & Environment:
-  - Use \`@nestjs/config\` with \`ConfigModule.forRoot()\`.
-  - Validate env vars with \`Joi\` or \`Zod\` schema in \`validationSchema\`.
-  - Inject config via \`ConfigService\` — never use \`process.env\` directly.
-  - Use namespaced configs (\`registerAs()\`) for complex configuration.
-- Testing:
-  - Use \`@nestjs/testing\` \`Test.createTestingModule()\` for unit tests.
-  - Mock providers with \`{ provide: Service, useValue: mockService }\`.
-  - Use \`supertest\` for e2e tests against the running app.
-  - Test guards, pipes and interceptors in isolation.
-  - Test file naming: \`<name>.spec.ts\` (unit), \`<name>.e2e-spec.ts\` (e2e).
-- Performance:
-  - Consider using \`FastifyAdapter\` instead of \`ExpressAdapter\` for high-throughput APIs.
-  - Avoid using \`class-transformer\` (\`new ValidationPipe({ transform: true })\`) on hot paths as it is slow. Use manual mapping if performance is critical.
-  - Map database entities to plain objects or use query builder \`.getRawMany()\` for large datasets instead of instantiating full Entity class instances.
-  - Use caching (\`CacheModule\`) for frequently accessed, rarely changing data.
-  - Offload heavy tasks (email, image processing) to queues (BullMQ/RabbitMQ) instead of blocking the main thread.
-- Naming Conventions:
-  - Files: \`kebab-case\` — \`user-profile.controller.ts\`, \`create-user.dto.ts\`.
-  - Classes: \`PascalCase\` — \`UserProfileController\`, \`CreateUserDto\`.
-  - Suffixes: \`.module\`, \`.controller\`, \`.service\`, \`.dto\`, \`.entity\`, \`.guard\`, \`.pipe\`, \`.interceptor\`, \`.filter\`, \`.decorator\`.
+
+### Directory Structure (Feature-based + Domain-layered)
+\`\`\`
+src/
+├── main.ts                        # Bootstrap: Fastify adapter, global pipes/filters/interceptors, Swagger
+├── app.module.ts                  # Root module — imports all feature modules
+├── config/                        # Environment & namespaced configs
+│   ├── app.config.ts              # registerAs('app', () => ({ port, env, ... }))
+│   ├── database.config.ts
+│   ├── jwt.config.ts
+│   └── config.validation.ts       # Zod/Joi schema for env-var validation
+├── common/                        # Shared, framework-level code — no business logic
+│   ├── decorators/                # @CurrentUser(), @Public(), @Roles(), @ApiPaginatedResponse()
+│   ├── filters/                   # GlobalExceptionFilter, DomainExceptionFilter
+│   ├── guards/                    # JwtAuthGuard, RolesGuard, ThrottlerGuard
+│   ├── interceptors/              # LoggingInterceptor, TransformInterceptor, TimeoutInterceptor
+│   ├── pipes/                     # ParseObjectIdPipe, TrimPipe
+│   ├── middleware/                # CorrelationIdMiddleware, RequestLoggerMiddleware
+│   └── dto/                       # BaseResponseDto, PaginationQueryDto, PaginationResponseDto
+├── database/
+│   ├── migrations/                # TypeORM migrations — named <timestamp>-<description>.ts
+│   ├── seeds/                     # Dev/staging seed scripts
+│   └── database.module.ts
+├── modules/                       # One sub-folder per bounded context / domain feature
+│   └── users/
+│       ├── users.module.ts
+│       ├── users.controller.ts    # HTTP layer only — no logic
+│       ├── users.service.ts       # Orchestration + business rules
+│       ├── users.repository.ts    # DB access layer (TypeORM/Prisma wrapper)
+│       ├── dto/
+│       │   ├── create-user.dto.ts
+│       │   ├── update-user.dto.ts
+│       │   └── user-response.dto.ts
+│       ├── entities/
+│       │   └── user.entity.ts
+│       └── interfaces/
+│           └── user-repository.interface.ts   # Abstract interface for testability
+└── shared/                        # Cross-module domain utilities (e.g., events, enums, value objects)
+    ├── events/
+    ├── enums/
+    └── interfaces/
+\`\`\`
+
+### Architecture Rules
+- Every domain feature = its own module under \`src/modules/\`. Never dump features in the root.
+- Layer boundaries: Controller → Service → Repository. Never skip or reverse layers.
+- Controllers are thin: extract, validate, delegate, return. Zero business logic.
+- Services own orchestration, business rules, and domain events. No direct DB calls.
+- Repositories own all data access: queries, transactions, entity mapping.
+- \`common/\` is framework plumbing — zero domain knowledge.
+- \`shared/\` holds cross-domain types (enums, events, value objects) — zero framework imports.
+- Use \`@Global()\` only for \`ConfigModule\`, \`LoggerModule\`, \`DatabaseModule\` — never feature modules.
+- Import/export only what is necessary. Avoid \`exports: [...everything]\` in modules.
+
+### Controllers
+- Use proper HTTP decorators: \`@Get()\`, \`@Post()\`, \`@Put()\`, \`@Patch()\`, \`@Delete()\`.
+- Extract request data with \`@Param()\`, \`@Query()\`, \`@Body()\` — never touch \`req\` directly.
+- Use \`@HttpCode(HttpStatus.NO_CONTENT)\` for 204, \`@HttpCode(HttpStatus.CREATED)\` for 201.
+- Version endpoints: \`@Controller({ path: 'users', version: '1' })\` + \`APP_VERSION\` in main.ts.
+- Apply Swagger decorators on every endpoint: \`@ApiTags()\`, \`@ApiOperation()\`, \`@ApiResponse()\`, \`@ApiBearerAuth()\`.
+- Keep returned types explicit: always declare \`@ApiResponse({ type: UserResponseDto })\`.
+
+### Services & Dependency Injection
+- All business logic lives in \`@Injectable()\` services. No fat controllers, no fat repositories.
+- Constructor injection always. Never direct \`new Service()\` or \`ModuleRef\` unless dynamic context requires it.
+- Depend on interfaces, not concrete classes — enables mock injection in tests.
+  \`\`\`ts
+  constructor(
+    @Inject(USER_REPOSITORY) private readonly userRepo: IUserRepository,
+    private readonly configService: ConfigService<AppConfig>,
+  ) {}
+  \`\`\`
+- Scope: keep \`Scope.DEFAULT\` (singleton). Use \`Scope.REQUEST\` only when per-request state is unavoidable; it cascades and kills performance.
+- Use \`useFactory\` providers for async initialization (DB connections, external SDK setup).
+
+### DTOs & Validation
+- One DTO per operation: \`CreateUserDto\`, \`UpdateUserDto\`, \`UserResponseDto\`. Never reuse mutating DTOs as response shapes.
+- Use \`class-validator\` decorators: \`@IsString()\`, \`@IsEmail()\`, \`@IsUUID()\`, \`@IsNotEmpty()\`, \`@MinLength()\`, \`@IsOptional()\`.
+- Use \`class-transformer\` on responses: \`@Exclude()\` on sensitive fields (passwords, tokens), \`@Expose()\` for safe fields.
+- Compose DTOs with mapped-types: \`PartialType\`, \`PickType\`, \`OmitType\`, \`IntersectionType\` from \`@nestjs/mapped-types\`.
+- Global \`ValidationPipe\` config in \`main.ts\`:
+  \`\`\`ts
+  app.useGlobalPipes(new ValidationPipe({
+    whitelist: true,           // strip unknown properties
+    forbidNonWhitelisted: true,// throw on unknown properties
+    transform: true,           // auto-cast primitives from path/query
+    transformOptions: { enableImplicitConversion: true },
+  }));
+  \`\`\`
+- Paginated responses: always wrap in \`PaginationResponseDto<T>\` with \`data\`, \`total\`, \`page\`, \`limit\`.
+
+### Guards, Pipes, Interceptors, Filters
+- Execution order (memorize): **Middleware → Guards → Interceptors (pre) → Pipes → Route Handler → Interceptors (post) → Exception Filters**.
+- \`Guards\`: authorization decisions. Return boolean; throw \`ForbiddenException\` / \`UnauthorizedException\` for failures.
+- \`Pipes\`: transform or validate inputs. Throw \`BadRequestException\` on invalid data.
+- \`Interceptors\`: cross-cutting concerns — structured logging, response envelope wrapping, caching, timeout.
+- \`Exception Filters\`: uniform error response shape:
+  \`\`\`ts
+  { statusCode, message, error, requestId, timestamp }
+  \`\`\`
+- Register globally in \`main.ts\` (not in \`AppModule\`): \`app.useGlobalFilters()\`, \`app.useGlobalInterceptors()\`.
+- Feature-specific guards/pipes: apply at controller or route level with \`@UseGuards()\` / \`@UsePipes()\`.
+
+### Authentication & Authorization
+- JWT auth: \`@nestjs/passport\` + \`passport-jwt\`. Issue short-lived access tokens (15m) + long-lived refresh tokens (7d).
+- Store refresh tokens hashed in DB. Rotate on every refresh. Invalidate on logout.
+- \`JwtAuthGuard\` as global guard. Use \`@Public()\` decorator to opt routes out — safer than manual \`@UseGuards\` on every protected route.
+- RBAC with \`@Roles('admin', 'editor')\` decorator + \`RolesGuard\`. Store roles in JWT payload — no extra DB call on each request.
+- Fine-grained permissions: use a \`PermissionsGuard\` with \`@RequirePermissions()\` for resource-level access control.
+- Never store raw passwords. Use \`bcrypt\` with cost factor ≥ 12 (\`bcrypt.hash(password, 12)\`).
+- Protect password reset and email verification flows with short-lived signed tokens (HMAC or JWT with \`expiresIn: '1h'\`).
+
+### Database (TypeORM / Prisma)
+- Entities in \`<feature>/entities/<name>.entity.ts\`. Decorate with \`@Entity()\`, \`@Column()\`, \`@PrimaryGeneratedColumn('uuid')\`.
+- Use UUIDs (\`uuid\`) as primary keys by default, not auto-increment integers — safer for distributed systems.
+- Use \`@CreateDateColumn()\`, \`@UpdateDateColumn()\`, \`@DeleteDateColumn()\` (soft deletes with \`@SoftDelete()\`).
+- Migrations only — **never \`synchronize: true\` in any non-local environment**. Use \`typeorm migration:generate\`.
+- Transactions with \`QueryRunner\` for multi-step mutations:
+  \`\`\`ts
+  const qr = this.dataSource.createQueryRunner();
+  await qr.connect(); await qr.startTransaction();
+  try { ...; await qr.commitTransaction(); }
+  catch (e) { await qr.rollbackTransaction(); throw e; }
+  finally { await qr.release(); }
+  \`\`\`
+- Repositories: define interface in \`interfaces/\`, implement with TypeORM. Inject via token — never extend \`Repository<T>\` directly in service.
+- Avoid N+1: use \`QueryBuilder.leftJoinAndSelect()\` or Prisma \`include\`. Never fetch relations in a loop.
+- Add indexes for all FK columns and frequently-queried fields: \`@Index()\` on entity or in migration.
+- Use \`SELECT\` projections for list endpoints — never return full entity graph to the client.
+
+### Config & Environment
+- Use \`@nestjs/config\` with namespaced configs via \`registerAs()\`:
+  \`\`\`ts
+  // config/jwt.config.ts
+  export default registerAs('jwt', () => ({
+    secret: process.env.JWT_SECRET,
+    expiresIn: process.env.JWT_EXPIRES_IN ?? '15m',
+  }));
+  \`\`\`
+- Validate env vars at startup with Zod (preferred) or Joi in \`config.validation.ts\`. App must fail fast with a clear error if required vars are missing.
+- Inject typed config with generic \`ConfigService\`:
+  \`\`\`ts
+  private readonly jwtConfig = this.configService.get<JwtConfig>('jwt', { infer: true });
+  \`\`\`
+- Never read \`process.env\` outside of \`config/\`. Never hardcode values that vary per environment.
+
+### Error Handling
+- Define domain-specific exceptions in \`common/exceptions/\`: \`UserNotFoundException extends NotFoundException\`.
+- Global \`HttpExceptionFilter\` catches everything. Domain exceptions map to HTTP status automatically.
+- Error response contract (enforced by filter):
+  \`\`\`ts
+  { statusCode: number; message: string; error: string; requestId: string; timestamp: string; }
+  \`\`\`
+- Never expose stack traces in production (\`process.env.NODE_ENV === 'production'\` check in filter).
+- Log every 5xx with \`requestId\`, \`userId\` (if authed), \`method\`, \`url\`, \`durationMs\`.
+
+### Logging & Observability
+- Use a structured logger (Pino via \`nestjs-pino\` or Winston). Never use \`console.log\` in production code.
+- Inject \`Logger\` from \`@nestjs/common\` in services; set context: \`private readonly logger = new Logger(UsersService.name)\`.
+- \`CorrelationIdMiddleware\`: generate/forward \`X-Request-ID\` header and attach to AsyncLocalStorage. All log lines include it.
+- Expose Prometheus metrics via \`@willsoto/nestjs-prometheus\` or equivalent. Track: request count, latency p95/p99, DB query duration, queue lag.
+- Health check module: \`@nestjs/terminus\` at \`GET /health\` with DB, Redis, and queue indicators.
+  \`\`\`ts
+  // Returns 200 OK { status: 'ok', details: { db: { status: 'up' }, ... } }
+  \`\`\`
+
+### API Versioning & Swagger
+- Enable URI versioning in \`main.ts\`: \`app.enableVersioning({ type: VersioningType.URI })\`.
+- Default version \`'1'\` on \`AppModule\`. Breaking changes → new version \`'2'\`, keep old running.
+- Swagger setup in \`main.ts\` (disabled in production):
+  \`\`\`ts
+  if (process.env.NODE_ENV !== 'production') {
+    const doc = new DocumentBuilder().setTitle('API').setVersion('1.0').addBearerAuth().build();
+    SwaggerModule.setup('api/docs', app, SwaggerModule.createDocument(app, doc));
+  }
+  \`\`\`
+- Annotate all DTOs with \`@ApiProperty()\` / \`@ApiPropertyOptional()\`. Never rely on implicit type inference in Swagger.
+
+### Queue & Async Processing
+- Use BullMQ (\`@nestjs/bullmq\`) for background jobs. Never block the request thread for: email, SMS, PDF generation, image processing, external webhooks.
+- Separate processor files per queue: \`email.processor.ts\`, \`notification.processor.ts\`.
+- Always configure retry with exponential backoff and a dead-letter queue (DLQ) for failed jobs.
+- Workers: keep stateless. Read config from \`ConfigService\`, never from module-level globals.
+
+### Rate Limiting & Security
+- Apply \`@nestjs/throttler\` globally. Override per-route with \`@Throttle()\` for sensitive endpoints (login: 5/min, password-reset: 3/min).
+- Helmet (\`app.use(helmet())\`) in \`main.ts\` for security headers.
+- CORS: explicit origin whitelist — never \`origin: '*'\` in production.
+- Sanitize all free-text user inputs to prevent XSS before storing or rendering.
+- Validate file uploads: check MIME type (via magic bytes, not \`Content-Type\` header), enforce max size, store outside webroot or in cloud storage.
+
+### Testing
+- Unit tests: \`Test.createTestingModule()\` with all dependencies mocked via interfaces.
+  \`\`\`ts
+  const module = await Test.createTestingModule({
+    providers: [
+      UsersService,
+      { provide: USER_REPOSITORY, useValue: mockUserRepository },
+      { provide: ConfigService, useValue: mockConfigService },
+    ],
+  }).compile();
+  \`\`\`
+- E2E tests: spin up full \`NestApplication\` with in-memory SQLite or Testcontainers (Postgres). Use \`supertest\`.
+- Test naming: \`users.service.spec.ts\` (unit), \`users.controller.spec.ts\` (unit), \`users.e2e-spec.ts\` (e2e).
+- Aim for: 100% coverage on service/repository logic; smoke tests on every controller endpoint; full flows for critical paths (auth, checkout, payment).
+- Use \`jest.spyOn()\` for verifying side-effects (events emitted, queue jobs enqueued). Never test implementation details — test behavior.
+
+### Performance
+- Use \`FastifyAdapter\` over \`ExpressAdapter\` for new projects (~2× throughput, lower memory).
+- \`class-transformer\` is slow. On hot-list endpoints, map entities to plain objects manually instead of relying on \`plainToInstance()\`.
+- \`Scope.REQUEST\` propagates to all dependencies — avoid unless you truly need per-request isolation.
+- Caching: \`CacheModule\` with Redis for frequently-read, rarely-changed data (e.g., config lookups, user roles). Always set a TTL.
+- DB connection pool: configure \`max\` pool size = (CPU cores × 2) + active disk spindles. Never leave it at the default of 10 for production load.
+- Use \`.select()\` / \`QueryBuilder.select()\` projections on list queries. Never \`SELECT *\` on wide tables.
+- Pagination: cursor-based (keyset) for infinite scroll; offset-based acceptable for admin UIs with known small datasets.
+- Run independent I/O operations concurrently: \`const [user, orders] = await Promise.all([...]);\`.
+
+### Naming Conventions
+- Files: \`kebab-case\` — \`user-profile.controller.ts\`, \`create-user.dto.ts\`, \`jwt-auth.guard.ts\`.
+- Classes: \`PascalCase\` — \`UserProfileController\`, \`CreateUserDto\`, \`JwtAuthGuard\`.
+- File suffixes: \`.module\`, \`.controller\`, \`.service\`, \`.repository\`, \`.dto\`, \`.entity\`, \`.guard\`, \`.pipe\`, \`.interceptor\`, \`.filter\`, \`.decorator\`, \`.middleware\`, \`.processor\`, \`.event\`.
+- Constants / injection tokens: \`UPPER_SNAKE_CASE\` — \`USER_REPOSITORY\`, \`MAIL_SERVICE\`.
+- Enum values: \`UPPER_SNAKE_CASE\`. Enums in \`shared/enums/\`.
 `;
 
 const golangRules = `
