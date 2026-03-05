@@ -350,6 +350,293 @@ volumes:
 - [ ] No stale docs — update docs when changing code.
 `;
 
+   files['.github/skills/memory-management.md'] = `# Skill: Project Memory & Context Management
+
+## Core Memory Files
+Maintain these files to provide persistent context across AI sessions:
+
+### 1. Product Requirements (docs/product_requirements.md)
+- **Purpose**: Define project goals, problems solved, core requirements
+- **Update**: When scope changes or new features are planned
+- **Contents**: User stories, success metrics, constraints, stakeholders
+
+### 2. Architecture (docs/architecture.md)
+- **Purpose**: System design, component relationships, dependencies
+- **Update**: When adding major components or changing architecture
+- **Contents**: Diagrams, data flow, integration points, tech stack
+
+### 3. Technical Specs (docs/technical.md)
+- **Purpose**: Development environment, key decisions, patterns
+- **Update**: When adopting new patterns or making technical decisions
+- **Contents**: Setup instructions, design patterns, coding standards, dependencies
+
+### 4. Active Context (docs/active_context.md)
+- **Purpose**: Current development focus and recent changes
+- **Update**: At start/end of each work session
+- **Contents**: Current focus, recent changes, next steps, blockers
+
+### 5. Lessons Learned (docs/lessons_learned.md)
+- **Purpose**: Capture patterns, mistakes, and solutions
+- **Update**: When encountering and solving non-trivial issues
+- **Contents**: Problem -> Solution -> Why it worked
+
+### 6. Error Documentation (docs/error_log.md)
+- **Purpose**: Reusable fixes for recurring issues
+- **Update**: When fixing bugs that might recur
+- **Contents**: Error signature -> Root cause -> Fix -> Prevention
+
+## Memory Update Workflow
+1. **Session Start**: Read \`active_context.md\` to resume work
+2. **During Work**: Update \`active_context.md\` with decisions and changes
+3. **Session End**: Summarize progress, update next steps
+4. **Major Changes**: Update architecture/technical docs
+5. **Lessons**: Document non-obvious solutions in \`lessons_learned.md\`
+
+## Checklist
+- [ ] All core memory files exist and are up-to-date
+- [ ] Active context reflects current work accurately
+- [ ] Architecture docs match actual implementation
+- [ ] Technical decisions are documented with rationale
+- [ ] Lessons learned capture reusable knowledge
+- [ ] Error log prevents repeat mistakes
+`;
+
+   files['.github/skills/workflow-enforcement.md'] = `# Skill: Structured Development Workflow
+
+## Five-Phase Development Cycle
+Apply this workflow to every task, from small features to entire projects.
+
+### Phase 1: Requirements & Clarification
+**Goal**: Make requirements crystal clear before any work begins.
+
+**Actions**:
+1. Read and understand the request thoroughly
+2. Ask clarifying questions:
+   - What is the expected behavior?
+   - What are the edge cases?
+   - What are the acceptance criteria?
+   - Are there performance/security constraints?
+3. Document requirements in \`docs/active_context.md\`
+4. Identify potential bottlenecks or risks upfront
+
+**Output**: Clear, unambiguous requirements document
+
+### Phase 2: Exhaustive Search & Optimal Plan
+**Goal**: Explore all solution approaches and choose the best one.
+
+**Actions**:
+1. Search codebase for existing patterns to follow
+2. Consider multiple approaches:
+   - Simplest solution
+   - Most maintainable solution
+   - Highest performance solution
+3. Evaluate trade-offs for each approach
+4. Select optimal approach with clear reasoning
+5. Break down into incremental steps
+
+**Output**: Detailed implementation plan with justification
+
+### Phase 3: User Validation
+**Goal**: Confirm plan before implementation.
+
+**Actions**:
+1. Present the plan to user/team
+2. Clearly state assumptions and design decisions
+3. Explain why this approach is optimal
+4. Get explicit approval before proceeding
+
+**Output**: Approved plan ready for implementation
+
+### Phase 4: Incremental Implementation
+**Goal**: Build iteratively with continuous validation.
+
+**Actions**:
+1. Implement one functionality at a time
+2. Test exhaustively after each increment:
+   - Happy path
+   - Edge cases
+   - Error conditions
+3. Update \`active_context.md\` with progress
+4. Commit working increments (not broken code)
+5. Move to next functionality only when current is solid
+
+**Output**: Fully tested, working implementation
+
+### Phase 5: Optimization & Suggestions
+**Goal**: Improve and future-proof the solution.
+
+**Actions**:
+1. Review for optimization opportunities
+2. Check security implications
+3. Suggest additional features or improvements
+4. Update documentation and memory files
+5. Document lessons learned
+
+**Output**: Polished solution + recommendations
+
+## Workflow Checklist
+- [ ] Requirements clarified and documented
+- [ ] Multiple approaches considered
+- [ ] Optimal plan selected with reasoning
+- [ ] Plan validated before implementation
+- [ ] Implemented incrementally with tests
+- [ ] Each increment works before moving on
+- [ ] Optimizations identified and applied
+- [ ] Documentation updated
+- [ ] Lessons learned captured
+`;
+
+   files['.github/skills/meta-instructions.md'] = `# Skill: Writing Effective AI Instructions
+
+## Purpose
+This meta-skill defines how to write, structure, and validate instruction files for AI coding assistants.
+
+## Instruction File Structure
+
+### 1. Header
+- Start with category and specific topic
+- Include purpose statement (one sentence)
+- Define when to apply (specific conditions)
+
+### 2. Core Rules
+- Use imperative mood: "Use X" not "You should use X"
+- Be specific and actionable: "Cache in Awake" not "Cache early"
+- Provide rationale: "Use X because Y"
+- Include anti-patterns: "Never do X because Y"
+
+### 3. Examples
+- Show correct implementation
+- Show incorrect implementation with explanation
+- Use realistic, project-relevant examples
+
+### 4. Checklist
+- Actionable verification items
+- Binary yes/no checks
+- Ordered by importance
+
+## Instruction Quality Criteria
+
+### Clarity
+- [ ] No ambiguous terms or vague guidance
+- [ ] Technical terms defined or linked
+- [ ] Examples match the instruction level (beginner/advanced)
+
+### Completeness
+- [ ] Covers happy path and edge cases
+- [ ] Includes error handling guidance
+- [ ] Addresses common mistakes
+
+### Consistency
+- [ ] Aligns with other instructions in the project
+- [ ] Uses same terminology as codebase
+- [ ] Follows project coding standards
+
+### Actionability
+- [ ] Every rule can be verified
+- [ ] Checklist items are testable
+- [ ] Examples can be copy-pasted and adapted
+
+## Validation Process
+Before finalizing an instruction file:
+
+1. **Clarity Check**: Can a junior developer understand it?
+2. **Completeness Check**: Does it cover all scenarios?
+3. **Consistency Check**: Does it align with existing rules?
+4. **Test**: Apply it to real code and verify it works
+5. **Review**: Get feedback from team members
+
+## Checklist
+- [ ] Instruction follows the standard template
+- [ ] All sections are complete and clear
+- [ ] Examples are realistic and tested
+- [ ] Checklist items are actionable
+- [ ] No contradictions with other instructions
+- [ ] Validated against real code
+`;
+
+   files['.github/skills/ai-agent-behavior.md'] = `# Skill: AI Agent Behavior Patterns
+
+## Follow-Up Question Enforcement
+Before generating code, AI must ask clarifying questions when:
+
+### Ambiguity Triggers
+- Requirements mention "it" or "this" without clear referent
+- Multiple valid interpretations exist
+- Edge cases are not specified
+- Performance/security requirements are unclear
+- Integration points are not defined
+
+### Required Questions
+1. **Scope**: "Should this handle [edge case X]?"
+2. **Behavior**: "When [condition Y], should it [action A] or [action B]?"
+3. **Constraints**: "Are there performance/memory/security requirements?"
+4. **Integration**: "How should this interact with [existing component]?"
+5. **Validation**: "What are the acceptance criteria?"
+
+### Confidence Declaration
+Before implementing, AI should state understanding, key assumptions, edge cases to handle, and confidence level (High/Medium/Low).
+
+## Reasoning Before Action
+AI should think step-by-step:
+
+### 1. Understand Context
+- Read relevant files
+- Identify existing patterns
+- Check for similar implementations
+
+### 2. Plan Approach
+- List possible solutions
+- Evaluate trade-offs
+- Select best approach with reasoning
+
+### 3. Verify Before Implementing
+- Check assumptions
+- Confirm approach aligns with project standards
+- Identify potential issues
+
+### 4. Implement Incrementally
+- Start with smallest working unit
+- Test before adding complexity
+- Refactor as needed
+
+## Code Generation Principles
+
+### Read Before Write
+- [ ] Existing code patterns identified
+- [ ] Similar implementations found and studied
+- [ ] Project conventions understood
+- [ ] Dependencies and constraints known
+
+### Minimal Changes
+- [ ] Only modify what's necessary
+- [ ] Preserve existing style and patterns
+- [ ] No unnecessary refactoring
+- [ ] No scope creep
+
+### Test Coverage
+- [ ] Happy path tested
+- [ ] Edge cases tested
+- [ ] Error conditions tested
+- [ ] Integration points verified
+
+### Documentation
+- [ ] Code is self-documenting
+- [ ] Complex logic has comments explaining WHY
+- [ ] Public APIs have clear documentation
+- [ ] Breaking changes are noted
+
+## Response Format
+Structure AI responses with: Understanding, Approach, Implementation, Testing, and Next Steps sections.
+
+## Checklist
+- [ ] Clarifying questions asked when needed
+- [ ] Confidence level stated before implementation
+- [ ] Existing code patterns followed
+- [ ] Changes are minimal and focused
+- [ ] Tests cover all scenarios
+- [ ] Documentation is clear and complete
+`;
+
    files['.github/skills/accessibility.md'] = `# Skill: Web Accessibility (WCAG 2.1 AA)
 
 ## Semantic HTML
