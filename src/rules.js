@@ -2,8 +2,11 @@
 //  TEMPLATES - Comprehensive AI Rules
 // ================================================================
 
-export function baseRules({ stack }) {
-   const common = `# AI Coding Rules
+const VALID_STACKS = new Set(['ts', 'react', 'node', 'nestjs', 'python', 'unity', 'go', 'flutter']);
+
+// ── Stack-specific rule sections ──────────────────────────────
+
+const commonRules = `# AI Coding Rules
 
 ## Identity & Behavior
 - You are an expert software engineer embedded in this project.
@@ -71,7 +74,7 @@ When implementing changes, always provide:
 4. **Edge cases** - what could break, boundary conditions considered
 `;
 
-   const ts = `
+const tsRules = `
 ## TypeScript
 - Enable and respect \`strict: true\`. Never weaken tsconfig.
 - Prefer \`unknown\` + type-guards over \`any\`. Use \`any\` only as last resort.
@@ -89,7 +92,7 @@ When implementing changes, always provide:
 - Use barrel exports (\`index.ts\`) sparingly - they can cause circular deps.
 `;
 
-   const react = `
+const reactRules = `
 ## React
 - Functional components + hooks only. No class components.
 - Keep components presentational. Data fetching belongs in hooks or services.
@@ -126,7 +129,7 @@ When implementing changes, always provide:
 - Ensure light/dark both look correct.
 `;
 
-   const nodeApi = `
+const nodeApiRules = `
 ## Node / API
 - Use async/await everywhere. No callbacks, no raw \`.then()\` chains.
 - Validate ALL request inputs at the boundary using a schema library (Zod, Joi, etc.).
@@ -156,7 +159,7 @@ When implementing changes, always provide:
   - Configure database connection pooling with max/min pool sizes tuned to your infrastructure.
 `;
 
-   const python = `
+const pythonRules = `
 ## Python
 - Type hints on ALL public functions. Use \`from __future__ import annotations\`.
 - Follow PEP 8 strictly (line length, naming, spacing).
@@ -190,7 +193,7 @@ When implementing changes, always provide:
   - Avoid excessive string concatenation in loops (\`str += msg\`); use \`''.join(list)\` instead.
 `;
 
-   const unity = `
+const unityRules = `
 ## Unity / C#
 - Naming:
   - Methods, Properties, Classes: \`PascalCase\`.
@@ -231,7 +234,7 @@ When implementing changes, always provide:
   - Custom editors and property drawers go in \`Assets/Editor/\`.
 `;
 
-   const nestjs = `
+const nestjsRules = `
 ## NestJS
 - Architecture:
   - Follow modular architecture. Every feature = its own module.
@@ -292,7 +295,7 @@ When implementing changes, always provide:
   - Suffixes: \`.module\`, \`.controller\`, \`.service\`, \`.dto\`, \`.entity\`, \`.guard\`, \`.pipe\`, \`.interceptor\`, \`.filter\`, \`.decorator\`.
 `;
 
-   const golang = `
+const golangRules = `
 ## Go
 - Follow [Effective Go](https://go.dev/doc/effective_go) and the Go Code Review Comments.
 - Use \`gofmt\` / \`goimports\` for formatting. No debates on style.
@@ -337,7 +340,7 @@ When implementing changes, always provide:
   - Use \`t.Cleanup()\` for test teardown, not \`defer\` in test body.
 `;
 
-   const flutter = `
+const flutterRules = `
 ## Flutter / Dart
 - Use Dart 3+ with null safety. Never use \`!\` (null assertion) unless provably safe.
 - Naming:
@@ -385,16 +388,20 @@ When implementing changes, always provide:
   - Handle platform channels safely — always handle \`MissingPluginException\`.
 `;
 
-   const stackMap = {
-      ts: common + ts,
-      react: common + ts + react,
-      node: common + ts + nodeApi,
-      nestjs: common + ts + nestjs,
-      python: common + python,
-      unity: common + unity,
-      go: common + golang,
-      flutter: common + flutter,
-   };
+const STACK_MAP = {
+   ts: commonRules + tsRules,
+   react: commonRules + tsRules + reactRules,
+   node: commonRules + tsRules + nodeApiRules,
+   nestjs: commonRules + tsRules + nestjsRules,
+   python: commonRules + pythonRules,
+   unity: commonRules + unityRules,
+   go: commonRules + golangRules,
+   flutter: commonRules + flutterRules,
+};
 
-   return stackMap[stack] || common + ts;
+export function baseRules({ stack }) {
+   if (!VALID_STACKS.has(stack)) {
+      console.warn(`Warning: Unknown stack "${stack}", falling back to "ts".`);
+   }
+   return STACK_MAP[stack] ?? STACK_MAP.ts;
 }

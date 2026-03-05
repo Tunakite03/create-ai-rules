@@ -1,6 +1,10 @@
 import { baseRules } from '../rules.js';
 import { buildSkills } from '../skills.js';
 
+function instructionHeader(applyTo) {
+   return `---\napplyTo: "${applyTo}"\n---\n`;
+}
+
 // --- GitHub Copilot (comprehensive) ---
 export function templatesCopilot({ stack, minimal }) {
    const files = {};
@@ -10,10 +14,9 @@ export function templatesCopilot({ stack, minimal }) {
 
    // --- Granular instruction files ---
 
-   files['.github/instructions/00-style.instructions.md'] = `---
-applyTo: "**"
----
-# Style & Readability
+   files['.github/instructions/00-style.instructions.md'] =
+      instructionHeader('**') +
+      `# Style & Readability
 
 ## Functions
 - Keep functions under 40 lines. If longer, extract helpers.
@@ -55,10 +58,9 @@ applyTo: "**"
 
    // Unity-specific instruction file
    if (stack === 'unity') {
-      files['.github/instructions/05-unity.instructions.md'] = `---
-applyTo: "**/*.cs"
----
-# Unity / C# Rules
+      files['.github/instructions/05-unity.instructions.md'] =
+         instructionHeader('**/*.cs') +
+         `# Unity / C# Rules
 
 ## Lifecycle
 - Init dependencies: \`Awake\`. Subscribe events: \`OnEnable\`. Unsubscribe: \`OnDisable\`.
@@ -97,10 +99,9 @@ applyTo: "**/*.cs"
 
    // Tailwind + shadcn/ui style guide for React stack
    if (stack === 'react') {
-      files['.github/instructions/05-ui-style.instructions.md'] = `---
-applyTo: "**/*.{tsx,jsx,css}"
----
-# UI Style Guide (Tailwind + shadcn/ui)
+      files['.github/instructions/05-ui-style.instructions.md'] =
+         instructionHeader('**/*.{tsx,jsx,css}') +
+         `# UI Style Guide (Tailwind + shadcn/ui)
 
 ## Theme
 - Dark mode: class-based (\`dark\` class on html/body).
@@ -153,10 +154,9 @@ applyTo: "**/*.{tsx,jsx,css}"
 
    // Go-specific instruction file
    if (stack === 'go') {
-      files['.github/instructions/05-go.instructions.md'] = `---
-applyTo: "**/*.go"
----
-# Go Rules
+      files['.github/instructions/05-go.instructions.md'] =
+         instructionHeader('**/*.go') +
+         `# Go Rules
 
 ## Error Handling
 - Check errors immediately: \`if err != nil { return fmt.Errorf("context: %w", err) }\`.
@@ -196,10 +196,9 @@ applyTo: "**/*.go"
 
    // Flutter-specific instruction file
    if (stack === 'flutter') {
-      files['.github/instructions/05-flutter.instructions.md'] = `---
-applyTo: "**/*.dart"
----
-# Flutter / Dart Rules
+      files['.github/instructions/05-flutter.instructions.md'] =
+         instructionHeader('**/*.dart') +
+         `# Flutter / Dart Rules
 
 ## Widgets
 - Use \`const\` constructors wherever possible.
@@ -234,10 +233,9 @@ applyTo: "**/*.dart"
 `;
    }
 
-   files['.github/instructions/10-typescript.instructions.md'] = `---
-applyTo: "**/*.{ts,tsx}"
----
-# TypeScript Rules
+   files['.github/instructions/10-typescript.instructions.md'] =
+      instructionHeader('**/*.{ts,tsx}') +
+      `# TypeScript Rules
 
 ## Types
 - Enable \`strict: true\`. Never weaken compiler options.
@@ -263,10 +261,9 @@ applyTo: "**/*.{ts,tsx}"
 - Prefer \`Map\`/\`Set\` over plain objects for dynamic keys.
 `;
 
-   files['.github/instructions/20-error-handling.instructions.md'] = `---
-applyTo: "**/*.{ts,tsx,js,jsx}"
----
-# Error Handling Rules
+   files['.github/instructions/20-error-handling.instructions.md'] =
+      instructionHeader('**/*.{ts,tsx,js,jsx}') +
+      `# Error Handling Rules
 
 ## Principles
 - Never swallow errors. Handle or re-throw with added context.
@@ -291,10 +288,9 @@ applyTo: "**/*.{ts,tsx,js,jsx}"
 - Return consistent error shape: \`{ error: { code, message, details? } }\`.
 `;
 
-   files['.github/instructions/30-security.instructions.md'] = `---
-applyTo: "**"
----
-# Security Rules
+   files['.github/instructions/30-security.instructions.md'] =
+      instructionHeader('**') +
+      `# Security Rules
 
 ## Secrets
 - NEVER hardcode secrets, API keys, tokens, or passwords in source code.
@@ -322,10 +318,9 @@ applyTo: "**"
 - Configure CORS with specific origins, not \`*\` in production.
 `;
 
-   files['.github/instructions/40-testing.instructions.md'] = `---
-applyTo: "**/*.{test,spec}.{ts,tsx,js,jsx}"
----
-# Testing Rules
+   files['.github/instructions/40-testing.instructions.md'] =
+      instructionHeader('**/*.{test,spec}.{ts,tsx,js,jsx}') +
+      `# Testing Rules
 
 ## When to Write Tests
 - Every new feature must have tests.
@@ -358,10 +353,9 @@ applyTo: "**/*.{test,spec}.{ts,tsx,js,jsx}"
 - E2E tests for critical user journeys.
 `;
 
-   files['.github/instructions/50-performance.instructions.md'] = `---
-applyTo: "**/*.{ts,tsx,js,jsx}"
----
-# Performance Rules
+   files['.github/instructions/50-performance.instructions.md'] =
+      instructionHeader('**/*.{ts,tsx,js,jsx}') +
+      `# Performance Rules
 
 ## Principles
 - Correctness FIRST, then optimize when measured to be slow.
@@ -388,10 +382,9 @@ applyTo: "**/*.{ts,tsx,js,jsx}"
 - Set appropriate cache headers (ETags, Cache-Control).
 `;
 
-   files['.github/instructions/90-pr-checklist.instructions.md'] = `---
-applyTo: "**"
----
-# PR Checklist
+   files['.github/instructions/90-pr-checklist.instructions.md'] =
+      instructionHeader('**') +
+      `# PR Checklist
 
 Before submitting any change, verify:
 

@@ -14,8 +14,17 @@ export async function exists(absPath) {
    }
 }
 
-export async function writeFileSafe(relPath, content, { force }) {
+function assertWithinCwd(abs) {
+   const cwd = path.resolve(process.cwd());
+   const resolved = path.resolve(abs);
+   if (!resolved.startsWith(cwd + path.sep) && resolved !== cwd) {
+      throw new Error(`Path traversal detected: "${resolved}" is outside working directory`);
+   }
+}
+
+export async function writeFileSafe(relPath, content, { force = false } = {}) {
    const abs = path.join(process.cwd(), relPath);
+   assertWithinCwd(abs);
    await ensureDir(abs);
    if (!force && (await exists(abs))) {
       return { relPath, status: 'skipped' };

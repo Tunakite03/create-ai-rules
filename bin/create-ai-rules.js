@@ -168,6 +168,8 @@ async function main() {
 }
 
 main().catch((err) => {
+   // Restore terminal state in case of unexpected error during interactive mode
+   process.stdout.write(`\x1b[?25h`);
    console.error(`\n${bold('Error:')} ${err?.message ?? err}`);
    process.exit(1);
 });

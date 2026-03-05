@@ -1,11 +1,13 @@
 import { baseRules } from '../rules.js';
+import { buildSkills } from '../skills.js';
 
 // --- Generic / Agents (comprehensive) ---
-export function templatesGeneric({ stack }) {
-   return {
-      'AGENTS.md':
-         baseRules({ stack }) +
-         `
+export function templatesGeneric({ stack, minimal }) {
+   const files = {};
+
+   files['AGENTS.md'] =
+      baseRules({ stack }) +
+      `
 ## Agent Behavior Guidelines
 
 ### Before Starting
@@ -28,6 +30,12 @@ export function templatesGeneric({ stack }) {
 This is a tool-agnostic rules file. If your IDE uses a specific
 filename (e.g., \`.cursorrules\`, \`CLAUDE.md\`, \`.windsurfrules\`),
 copy this content to the appropriate location.
-`,
-   };
+`;
+
+   if (!minimal) {
+      const skills = buildSkills({ stack });
+      Object.assign(files, skills);
+   }
+
+   return files;
 }
