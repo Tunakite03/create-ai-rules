@@ -33,8 +33,20 @@ function restoreTerminal() {
    }
 }
 
+function canUseInteractiveMode() {
+   return Boolean(process.stdin.isTTY && process.stdout.isTTY);
+}
+
 /** Single-select: ↑/↓ to navigate, Enter to confirm. */
 export async function selectOne(question, items, defaultIdx = 0) {
+   if (!canUseInteractiveMode()) {
+      if (items.length === 0) {
+         throw new Error('Interactive prompt requires a TTY. Re-run with --yes in non-interactive environments.');
+      }
+      const safeIdx = Math.min(Math.max(defaultIdx, 0), items.length - 1);
+      return items[safeIdx];
+   }
+
    let idx = defaultIdx;
 
    const render = () => {
@@ -114,6 +126,20 @@ export async function selectOne(question, items, defaultIdx = 0) {
 /** Multi-select: ↑/↓ to navigate, Space to toggle, A to toggle all, Enter to confirm.
  *  @param {number[]|null} defaultSelected - Indices to pre-select. Defaults to first two. */
 export async function selectMulti(question, items, defaultSelected = null) {
+   if (!canUseInteractiveMode()) {
+      if (items.length === 0) {
+         throw new Error('Interactive prompt requires a TTY. Re-run with --yes in non-interactive environments.');
+      }
+      if (defaultSelected !== null) {
+         const indices = defaultSelected.filter((i) => i >= 0 && i < items.length);
+         return indices.map((i) => items[i]);
+      }
+      if (items.length >= 2) {
+         return [items[0], items[1]];
+      }
+      return [items[0]];
+   }
+
    let idx = 0;
    const selected = new Set();
    if (defaultSelected !== null) {

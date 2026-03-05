@@ -94,6 +94,14 @@ ${stackHelpList}
 //  Main
 // ================================================================
 async function main() {
+   const isInteractive = Boolean(process.stdin.isTTY && process.stdout.isTTY);
+
+   if (!isInteractive && !opts.yes && !opts.checkRules) {
+      console.error(`\n${bold('Non-interactive mode detected.')}`);
+      console.error('Run with --yes (-y) to accept defaults, or run in a TTY for interactive prompts.\n');
+      process.exit(2);
+   }
+
    if (opts.checkRules) {
       const report = runRuleChecks();
       if (!report.ok) {
