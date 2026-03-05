@@ -2,11 +2,11 @@ import { baseRules } from '../rules.js';
 import { buildSkills } from '../skills.js';
 
 // --- Claude Code (comprehensive) ---
-export function templatesClaude({ stacks, minimal }) {
+export function templatesClaude({ stacks, minimal, full = false, verbosity = 'standard' }) {
    const files = {};
 
    files['CLAUDE.md'] =
-      baseRules({ stacks }) +
+      baseRules({ stacks, full, verbosity }) +
       `
 ## Claude Code Behavior
 
