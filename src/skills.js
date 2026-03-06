@@ -838,18 +838,49 @@ const toUserId = (id: string): UserId => id as UserId;
    if (stacks.includes('react')) {
       files['.github/skills/create-component.md'] = `# Skill: Create a React Component
 
-## Template
+## Server Component (default — no directive needed)
 \`\`\`tsx
+// app/_components/<Name>.tsx  OR  src/components/<Name>/<Name>.tsx
+import type { ReactNode } from 'react';
+
+interface <Name>Props {
+  children?: ReactNode;
+  // props here — can receive serializable data only
+}
+
+export async function <Name>({ children }: <Name>Props) {
+  // ✅ Can await directly — runs on the server
+  const data = await getData();
+
+  return (
+    <section>
+      {/* render data */}
+      {children}
+    </section>
+  );
+}
+\`\`\`
+
+## Client Component (needs hooks, events, or browser APIs)
+\`\`\`tsx
+'use client';
+
 // src/components/<Name>/<Name>.tsx
-import { type FC } from 'react';
+import { useState, useCallback, type FC } from 'react';
 
 export interface <Name>Props {
-  // define props here
+  // define props here — must be serializable from server parent
 }
 
 export const <Name>: FC<<Name>Props> = ({ /* props */ }) => {
   // hooks at the top
+  const [state, setState] = useState(/* initial */);
+
   // handlers named handle<Event>
+  const handleClick = useCallback(() => {
+    // handler logic
+  }, [/* deps */]);
+
   // early returns for loading/error states
 
   return (
@@ -862,15 +893,45 @@ export const <Name>: FC<<Name>Props> = ({ /* props */ }) => {
 <Name>.displayName = '<Name>';
 \`\`\`
 
+## When to use which
+| Need | Component type |
+|------|---------------|
+| Fetch data, access backend resources | Server Component |
+| Static display, no interactivity | Server Component |
+| useState, useEffect, useRef, etc. | Client Component (\`'use client'\`) |
+| onClick, onChange, onSubmit handlers | Client Component (\`'use client'\`) |
+| Browser APIs (localStorage, window) | Client Component (\`'use client'\`) |
+| Third-party client-only libs (charts, maps) | Client Component + \`next/dynamic\` |
+
+## Composition pattern — push 'use client' to leaves
+\`\`\`tsx
+// ✅ Server Component wraps a small client island
+import { LikeButton } from './LikeButton'; // 'use client' inside
+
+export async function PostCard({ id }: { id: string }) {
+  const post = await getPost(id);
+  return (
+    <article>
+      <h2>{post.title}</h2>
+      <p>{post.body}</p>
+      <LikeButton postId={id} />  {/* only this is client-side */}
+    </article>
+  );
+}
+\`\`\`
+
 ## Checklist
+- [ ] No \`'use client'\` unless the component actually uses hooks, events, or browser APIs.
 - [ ] Props interface exported and named \`<Name>Props\`.
+- [ ] Props passed from Server → Client components are serializable (no functions, Dates, or class instances).
 - [ ] No inline arrow functions in JSX — extract to named handlers.
 - [ ] \`useCallback\` for functions passed to child components.
 - [ ] Loading + error states handled explicitly.
 - [ ] Accessible: alt text on images, labels on inputs, aria where needed.
-- [ ] Colors only via Tailwind semantic tokens (no hardcoded hex).
+- [ ] Colors only via design tokens (Tailwind classes or CSS variables — no hardcoded hex).
 - [ ] Tested: renders without crash, key interactions covered.
-- [ ] Performance: Large lists are virtualized, expensive children are memoized.
+- [ ] Performance: Large lists virtualized, expensive pure children wrapped in \`React.memo\`.
+- [ ] Heavy client-only components dynamically imported: \`dynamic(() => import('./Heavy'), { ssr: false })\`.
 `;
 
       files['.github/skills/create-hook.md'] = `# Skill: Create a Custom React Hook
@@ -918,7 +979,7 @@ export function use<Name>(options: Use<Name>Options): Use<Name>Return {
 
       files['.github/skills/create-page.md'] = `# Skill: Create a Next.js Page / Route
 
-## App Router page template
+## Page template (App Router)
 \`\`\`tsx
 // app/<route>/page.tsx
 import type { Metadata } from 'next';
@@ -929,12 +990,16 @@ export const metadata: Metadata = {
 };
 
 interface PageProps {
-  params: { /* route params */ };
-  searchParams: { [key: string]: string | string[] | undefined };
+  params: Promise<{ slug: string }>;
+  searchParams: Promise<{ [key: string]: string | string[] | undefined }>;
 }
 
 export default async function <Name>Page({ params, searchParams }: PageProps) {
-  // fetch data server-side here
+  const { slug } = await params;
+  const { q } = await searchParams;
+
+  // fetch data server-side
+  const data = await getData(slug);
 
   return (
     <main className="container mx-auto px-4 md:px-6">
@@ -944,14 +1009,509 @@ export default async function <Name>Page({ params, searchParams }: PageProps) {
 }
 \`\`\`
 
+## Layout template
+\`\`\`tsx
+// app/<route>/layout.tsx
+import type { Metadata } from 'next';
+
+export const metadata: Metadata = {
+  title: { template: '%s | App Name', default: 'App Name' },
+};
+
+export default function <Name>Layout({ children }: { children: React.ReactNode }) {
+  return (
+    <div className="flex min-h-screen flex-col">
+      {/* shared navigation, sidebar, etc. */}
+      {children}
+    </div>
+  );
+}
+\`\`\`
+
+## Loading state
+\`\`\`tsx
+// app/<route>/loading.tsx
+export default function Loading() {
+  return (
+    <div className="flex items-center justify-center py-12">
+      <div className="h-8 w-8 animate-spin rounded-full border-4 border-primary border-t-transparent" />
+    </div>
+  );
+}
+\`\`\`
+
+## Error boundary
+\`\`\`tsx
+// app/<route>/error.tsx
+'use client';
+
+import { useEffect } from 'react';
+
+interface ErrorProps {
+  error: Error & { digest?: string };
+  reset: () => void;
+}
+
+export default function ErrorBoundary({ error, reset }: ErrorProps) {
+  useEffect(() => {
+    console.error(error);
+  }, [error]);
+
+  return (
+    <div className="flex flex-col items-center justify-center gap-4 py-12">
+      <h2>Something went wrong</h2>
+      <button onClick={reset} className="rounded bg-primary px-4 py-2 text-white">
+        Try again
+      </button>
+    </div>
+  );
+}
+\`\`\`
+
+## Dynamic metadata (when data-dependent)
+\`\`\`tsx
+import type { Metadata } from 'next';
+
+interface PageProps {
+  params: Promise<{ id: string }>;
+}
+
+export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
+  const { id } = await params;
+  const product = await getProduct(id);
+
+  return {
+    title: product.name,
+    description: product.description,
+    openGraph: { images: [product.imageUrl] },
+  };
+}
+\`\`\`
+
 ## Checklist
-- [ ] Metadata exported for SEO.
-- [ ] Data fetching in Server Component (not client-side useEffect).
-- [ ] Loading state: \`loading.tsx\` sibling file.
-- [ ] Error state: \`error.tsx\` sibling file.
-- [ ] Route params typed via \`PageProps\`.
-- [ ] Page container uses \`container mx-auto px-4 md:px-6\`.
-- [ ] Performance: Heavy client components are dynamically imported (\`next/dynamic\`).
+- [ ] \`metadata\` or \`generateMetadata\` exported for SEO.
+- [ ] Data fetched in Server Component (not client-side \`useEffect\`).
+- [ ] \`params\` and \`searchParams\` awaited (they are \`Promise\` in Next.js 15+).
+- [ ] \`loading.tsx\` sibling file for Suspense fallback.
+- [ ] \`error.tsx\` sibling file with \`'use client'\` + \`reset\` callback.
+- [ ] Page container uses consistent layout classes.
+- [ ] Dynamic routes have \`generateStaticParams\` when applicable (SSG).
+- [ ] Heavy client components dynamically imported via \`next/dynamic\`.
+- [ ] No secrets or server-only data leaked to client components.
+`;
+
+      files['.github/skills/create-server-action.md'] = `# Skill: Create a Next.js Server Action
+
+## Inline Server Action (simple forms)
+\`\`\`tsx
+// app/<route>/page.tsx
+import { revalidatePath } from 'next/cache';
+
+export default function NewPostPage() {
+  async function createPost(formData: FormData) {
+    'use server';
+
+    const title = formData.get('title') as string;
+    const body = formData.get('body') as string;
+
+    // validate input
+    if (!title || title.length < 3) {
+      throw new Error('Title must be at least 3 characters');
+    }
+
+    await db.post.create({ data: { title, body } });
+    revalidatePath('/posts');
+  }
+
+  return (
+    <form action={createPost}>
+      <input name="title" required minLength={3} />
+      <textarea name="body" required />
+      <button type="submit">Create</button>
+    </form>
+  );
+}
+\`\`\`
+
+## Separate action file (reusable, testable)
+\`\`\`typescript
+// app/<route>/actions.ts
+'use server';
+
+import { revalidatePath } from 'next/cache';
+import { redirect } from 'next/navigation';
+import { z } from 'zod';
+
+const CreatePostSchema = z.object({
+  title: z.string().min(3).max(200),
+  body: z.string().min(1).max(10000),
+});
+
+interface ActionState {
+  errors?: Record<string, string[]>;
+  message?: string;
+}
+
+export async function createPost(
+  prevState: ActionState,
+  formData: FormData,
+): Promise<ActionState> {
+  const parsed = CreatePostSchema.safeParse({
+    title: formData.get('title'),
+    body: formData.get('body'),
+  });
+
+  if (!parsed.success) {
+    return { errors: parsed.error.flatten().fieldErrors };
+  }
+
+  try {
+    await db.post.create({ data: parsed.data });
+  } catch {
+    return { message: 'Failed to create post. Please try again.' };
+  }
+
+  revalidatePath('/posts');
+  redirect('/posts');
+}
+\`\`\`
+
+## Client form with useActionState
+\`\`\`tsx
+'use client';
+
+import { useActionState } from 'react';
+import { createPost } from './actions';
+
+export function CreatePostForm() {
+  const [state, formAction, isPending] = useActionState(createPost, {});
+
+  return (
+    <form action={formAction}>
+      <input name="title" required />
+      {state.errors?.title && <p className="text-red-500">{state.errors.title[0]}</p>}
+
+      <textarea name="body" required />
+      {state.errors?.body && <p className="text-red-500">{state.errors.body[0]}</p>}
+
+      <button type="submit" disabled={isPending}>
+        {isPending ? 'Creating...' : 'Create'}
+      </button>
+
+      {state.message && <p className="text-red-500">{state.message}</p>}
+    </form>
+  );
+}
+\`\`\`
+
+## Checklist
+- [ ] File or function marked with \`'use server'\`.
+- [ ] Input validated with Zod or similar — never trust raw \`FormData\`.
+- [ ] Returns structured error state, not thrown errors (for \`useActionState\` pattern).
+- [ ] Calls \`revalidatePath\` or \`revalidateTag\` after mutations.
+- [ ] Uses \`redirect\` for post-mutation navigation (not client \`router.push\`).
+- [ ] No secrets leaked in returned state — only user-facing messages.
+- [ ] Idempotent where possible (safe to retry).
+- [ ] Pending state shown to user via \`useActionState\` / \`useFormStatus\`.
+`;
+
+      files['.github/skills/create-route-handler.md'] = `# Skill: Create a Next.js Route Handler
+
+## Template
+\`\`\`typescript
+// app/api/<resource>/route.ts
+import { NextRequest, NextResponse } from 'next/server';
+import { z } from 'zod';
+
+const CreateResourceSchema = z.object({
+  name: z.string().min(1).max(100),
+  email: z.string().email(),
+});
+
+// GET /api/<resource>
+export async function GET(request: NextRequest) {
+  const { searchParams } = request.nextUrl;
+  const page = Number(searchParams.get('page') ?? '1');
+  const limit = Math.min(Number(searchParams.get('limit') ?? '20'), 100);
+
+  const data = await db.resource.findMany({
+    skip: (page - 1) * limit,
+    take: limit,
+  });
+  const total = await db.resource.count();
+
+  return NextResponse.json({
+    data,
+    meta: { page, limit, total },
+  });
+}
+
+// POST /api/<resource>
+export async function POST(request: NextRequest) {
+  const body = await request.json();
+  const parsed = CreateResourceSchema.safeParse(body);
+
+  if (!parsed.success) {
+    return NextResponse.json(
+      { error: { code: 'VALIDATION_ERROR', details: parsed.error.flatten().fieldErrors } },
+      { status: 400 },
+    );
+  }
+
+  const created = await db.resource.create({ data: parsed.data });
+  return NextResponse.json({ data: created }, { status: 201 });
+}
+\`\`\`
+
+## Dynamic route handler
+\`\`\`typescript
+// app/api/<resource>/[id]/route.ts
+import { NextRequest, NextResponse } from 'next/server';
+
+interface RouteContext {
+  params: Promise<{ id: string }>;
+}
+
+export async function GET(_request: NextRequest, { params }: RouteContext) {
+  const { id } = await params;
+  const item = await db.resource.findUnique({ where: { id } });
+
+  if (!item) {
+    return NextResponse.json(
+      { error: { code: 'NOT_FOUND', message: \\\`Resource \\\${id} not found\\\` } },
+      { status: 404 },
+    );
+  }
+
+  return NextResponse.json({ data: item });
+}
+\`\`\`
+
+## When to use Route Handlers vs Server Actions
+| Use case | Approach |
+|----------|----------|
+| Form submissions, mutations from UI | Server Actions |
+| Webhooks from third-party services | Route Handlers |
+| Public REST API for external consumers | Route Handlers |
+| File uploads with streaming | Route Handlers |
+| Auth callbacks (OAuth, etc.) | Route Handlers |
+
+## Checklist
+- [ ] Input validated with Zod or similar — never trust raw \`request.json()\`.
+- [ ] Correct HTTP status codes: 200, 201, 400, 404, 409, 500.
+- [ ] Consistent response shape: \`{ data }\` for success, \`{ error: { code, message } }\` for errors.
+- [ ] List endpoints paginate with bounded limits.
+- [ ] \`params\` awaited (Promise in Next.js 15+).
+- [ ] Auth checked where required (middleware or in-handler).
+- [ ] Prefer Server Actions over Route Handlers for UI-triggered mutations.
+`;
+
+      files['.github/skills/react-data-fetching.md'] = `# Skill: React / Next.js Data Fetching Patterns
+
+## Server-side: async Server Component (preferred)
+\`\`\`tsx
+// app/posts/page.tsx — runs on the server, zero client JS
+export default async function PostsPage() {
+  const posts = await db.post.findMany({ orderBy: { createdAt: 'desc' }, take: 20 });
+
+  return (
+    <ul>
+      {posts.map((post) => (
+        <li key={post.id}>{post.title}</li>
+      ))}
+    </ul>
+  );
+}
+\`\`\`
+
+## Server-side: fetch with caching & revalidation
+\`\`\`tsx
+// Revalidate every 60 seconds (ISR)
+const data = await fetch('https://api.example.com/posts', {
+  next: { revalidate: 60 },
+});
+
+// Revalidate on-demand via tag
+const data = await fetch('https://api.example.com/posts', {
+  next: { tags: ['posts'] },
+});
+// Then in a Server Action: revalidateTag('posts');
+
+// No cache (SSR on every request)
+const data = await fetch('https://api.example.com/posts', {
+  cache: 'no-store',
+});
+\`\`\`
+
+## Server-side: parallel data fetching
+\`\`\`tsx
+export default async function DashboardPage() {
+  // ✅ Parallel — both start immediately
+  const [user, orders] = await Promise.all([
+    getUser(),
+    getOrders(),
+  ]);
+
+  // ❌ Sequential — orders waits for user to finish
+  // const user = await getUser();
+  // const orders = await getOrders();
+
+  return <Dashboard user={user} orders={orders} />;
+}
+\`\`\`
+
+## Server-side: Suspense streaming
+\`\`\`tsx
+import { Suspense } from 'react';
+
+export default function DashboardPage() {
+  return (
+    <div>
+      <h1>Dashboard</h1>
+      {/* Fast data renders immediately */}
+      <Suspense fallback={<OrdersSkeleton />}>
+        <Orders />  {/* async Server Component — streams when ready */}
+      </Suspense>
+    </div>
+  );
+}
+\`\`\`
+
+## Client-side: SWR / React Query (for real-time or user-specific data)
+\`\`\`tsx
+'use client';
+
+import useSWR from 'swr';
+
+const fetcher = (url: string) => fetch(url).then((res) => res.json());
+
+export function Notifications() {
+  const { data, error, isLoading } = useSWR('/api/notifications', fetcher, {
+    refreshInterval: 5000, // poll every 5s
+  });
+
+  if (isLoading) return <NotificationsSkeleton />;
+  if (error) return <p>Failed to load</p>;
+
+  return (
+    <ul>
+      {data.map((n: { id: string; message: string }) => (
+        <li key={n.id}>{n.message}</li>
+      ))}
+    </ul>
+  );
+}
+\`\`\`
+
+## Decision tree
+| Scenario | Approach |
+|----------|----------|
+| Initial page data | async Server Component |
+| Data shared across routes | \`fetch\` with \`next: { tags }\` + \`revalidateTag\` |
+| Static content, rarely changes | \`next: { revalidate: 3600 }\` or \`generateStaticParams\` |
+| Real-time / polling / user-specific | Client-side SWR or React Query |
+| Multiple independent data sources | \`Promise.all\` in Server Component |
+| Slow data alongside fast data | Suspense streaming with async children |
+
+## Checklist
+- [ ] Default to server-side data fetching. Use client fetching only for real-time / interactive needs.
+- [ ] Parallel fetches with \`Promise.all\` — never sequential when independent.
+- [ ] Caching strategy explicit: \`revalidate\`, \`tags\`, or \`no-store\`.
+- [ ] Suspense boundaries around slow async components for progressive loading.
+- [ ] Client fetchers handle loading, error, and empty states.
+- [ ] No \`useEffect(() => fetch(...))\` for initial page data — use Server Components.
+`;
+
+      files['.github/skills/react-testing.md'] = `# Skill: React / Next.js Testing
+
+## Component test with React Testing Library
+\`\`\`tsx
+// __tests__/<Name>.test.tsx
+import { render, screen } from '@testing-library/react';
+import userEvent from '@testing-library/user-event';
+import { <Name> } from '../<Name>';
+
+describe('<Name>', () => {
+  it('renders with required props', () => {
+    render(<<Name> title="Hello" />);
+    expect(screen.getByText('Hello')).toBeInTheDocument();
+  });
+
+  it('handles click interaction', async () => {
+    const handleClick = vi.fn(); // or jest.fn()
+    render(<<Name> onClick={handleClick} />);
+
+    await userEvent.click(screen.getByRole('button', { name: /submit/i }));
+    expect(handleClick).toHaveBeenCalledOnce();
+  });
+
+  it('shows loading state', () => {
+    render(<<Name> isLoading />);
+    expect(screen.getByRole('status')).toBeInTheDocument();
+  });
+
+  it('shows error state', () => {
+    render(<<Name> error="Something went wrong" />);
+    expect(screen.getByText(/something went wrong/i)).toBeInTheDocument();
+  });
+});
+\`\`\`
+
+## Hook test with renderHook
+\`\`\`tsx
+import { renderHook, act } from '@testing-library/react';
+import { useCounter } from '../useCounter';
+
+describe('useCounter', () => {
+  it('increments counter', () => {
+    const { result } = renderHook(() => useCounter({ initial: 0 }));
+
+    act(() => {
+      result.current.increment();
+    });
+
+    expect(result.current.count).toBe(1);
+  });
+});
+\`\`\`
+
+## Testing async Server Components (integration)
+\`\`\`tsx
+// For Server Components, test the rendered output via integration/e2e tests.
+// Unit test the data functions directly:
+import { getUser } from '../data/users';
+
+describe('getUser', () => {
+  it('returns user by id', async () => {
+    const user = await getUser('user-1');
+    expect(user).toMatchObject({ id: 'user-1', name: expect.any(String) });
+  });
+
+  it('returns null for non-existent user', async () => {
+    const user = await getUser('non-existent');
+    expect(user).toBeNull();
+  });
+});
+\`\`\`
+
+## Query priority (prefer accessible queries)
+| Priority | Query | When |
+|----------|-------|------|
+| 1 | \`getByRole\` | Buttons, links, headings, inputs (preferred) |
+| 2 | \`getByLabelText\` | Form inputs with labels |
+| 3 | \`getByPlaceholderText\` | Inputs without visible labels |
+| 4 | \`getByText\` | Non-interactive content |
+| 5 | \`getByTestId\` | Last resort — no semantic way to query |
+
+## Checklist
+- [ ] Use \`screen\` queries — not destructured \`getBy\` from \`render()\`.
+- [ ] Prefer \`getByRole\` over \`getByTestId\` — tests should mirror user interaction.
+- [ ] Use \`userEvent\` over \`fireEvent\` for realistic interaction simulation.
+- [ ] Test loading, error, and empty states — not just happy path.
+- [ ] Async operations wrapped in \`waitFor\` or awaited with \`findBy\` queries.
+- [ ] Mock external dependencies (fetch, services) — not internal component logic.
+- [ ] Server Components tested via their data functions + integration/e2e tests.
+- [ ] No snapshot tests for dynamic content — use explicit assertions.
 `;
    }
 
