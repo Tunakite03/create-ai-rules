@@ -1,4 +1,5 @@
 import { coreRules } from './rules/core.js';
+import { architectureRules } from './rules/architecture.js';
 import { workflowRules } from './rules/workflow.js';
 import { qualityRules } from './rules/quality.js';
 import { securityRules } from './rules/security.js';
@@ -43,7 +44,14 @@ export function baseRules({ stacks, full = false, verbosity = 'standard' }) {
    const level = normalizeVerbosity(verbosity);
    const selectedStacks = normalizeStacks(stacks);
 
-   const sections = [coreRules(level), workflowRules(level), qualityRules(level), securityRules(level), performanceRules(level)];
+   const sections = [
+      coreRules(level),
+      architectureRules(level),
+      workflowRules(level),
+      qualityRules(level),
+      securityRules(level),
+      performanceRules(level),
+   ];
 
    if (full) {
       const seen = new Set();

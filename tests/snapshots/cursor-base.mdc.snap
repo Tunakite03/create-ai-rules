@@ -11,6 +11,12 @@ alwaysApply: true
 - Match existing patterns, naming, and architecture.
 - Keep responses concise and actionable.
 
+## Architecture
+- Keep modules feature-oriented with clear boundaries between transport, domain logic, and persistence.
+- Prefer composition and explicit contracts at boundaries; avoid cross-layer leakage.
+- Preserve backward compatibility for public APIs, events, and schemas unless explicitly asked to break them.
+- Make state ownership, side effects, and data flow explicit before introducing abstractions.
+
 ## Workflow
 1. **Understand**: inspect related files, tests, and constraints.
 2. **Plan**: outline approach in 2-3 sentences.
@@ -36,4 +42,4 @@ alwaysApply: true
 - Avoid N+1 calls and unbounded list responses.
 - Use pagination/streaming for large payloads.
 - Measure before introducing caching/memoization.
-
+- Bound concurrency and set timeouts/cancellation for I/O-heavy code.

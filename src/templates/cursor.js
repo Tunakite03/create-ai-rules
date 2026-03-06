@@ -11,8 +11,7 @@ description: Base coding rules for AI assistant
 globs: 
 alwaysApply: true
 ---
-${baseRules({ stacks, full, verbosity })}
-`;
+${baseRules({ stacks, full, verbosity })}`;
 
    files['.cursor/rules/style.mdc'] = `---
 description: Style and readability conventions
