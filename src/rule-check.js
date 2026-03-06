@@ -22,6 +22,18 @@ export function runRuleChecks() {
       errors.push('Prompt safety conflict: rules require exposing step-by-step reasoning.');
    }
 
+   if (!has(/^## Architecture$/m, text)) {
+      warnings.push('Missing architecture section with boundary and compatibility guidance.');
+   }
+
+   if (!has(/backward-compatible|backward compatibility/i, text)) {
+      warnings.push('Missing backward compatibility guidance for public contracts.');
+   }
+
+   if (!has(/timeouts?|deadlines?|cancellation/i, text)) {
+      warnings.push('Missing I/O bounding guidance (timeouts, deadlines, or cancellation).');
+   }
+
    if (!has(/Rule Priority/, text)) {
       warnings.push('Missing conflict resolution section (priority order + MUST/SHOULD/MAY).');
    }

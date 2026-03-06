@@ -8,11 +8,13 @@ const PERFORMANCE_BY_VERBOSITY = {
 - Avoid N+1 calls and unbounded list responses.
 - Use pagination/streaming for large payloads.
 - Measure before introducing caching/memoization.
+- Bound concurrency and set timeouts/cancellation for I/O-heavy code.
 `,
    strict: `## Performance
 - Prioritize correctness, then optimize using profiling evidence.
 - Eliminate N+1 patterns and bound expensive operations.
 - Use pagination, batching, and streaming where data size can grow.
+- Bound concurrency, add timeouts/deadlines at I/O boundaries, and make retries idempotent where applicable.
 - Avoid unnecessary allocations and repeated expensive work in hot paths.
 `,
 };
