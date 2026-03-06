@@ -759,7 +759,7 @@ Structure AI responses with: Understanding, Approach, Implementation, Testing, a
 
    // ── TypeScript / React / Node skills ─────────────────────────
 
-   if (stacks.some((s) => ['ts', 'react', 'node', 'nestjs'].includes(s))) {
+   if (stacks.some((s) => ['ts', 'react', 'node', 'nestjs', 'nextjs'].includes(s))) {
       files['.github/skills/create-service.md'] = `# Skill: Create a TypeScript Service
 
 ## Template
@@ -835,7 +835,7 @@ const toUserId = (id: string): UserId => id as UserId;
 
    // ── React skills ──────────────────────────────────────────────
 
-   if (stacks.includes('react')) {
+   if (stacks.some((s) => ['react', 'nextjs'].includes(s))) {
       files['.github/skills/create-component.md'] = `# Skill: Create a React Component
 
 ## Template
@@ -952,6 +952,579 @@ export default async function <Name>Page({ params, searchParams }: PageProps) {
 - [ ] Route params typed via \`PageProps\`.
 - [ ] Page container uses \`container mx-auto px-4 md:px-6\`.
 - [ ] Performance: Heavy client components are dynamically imported (\`next/dynamic\`).
+`;
+
+      files['.github/skills/create-form.md'] = `# Skill: Create a React Form
+
+## Template (react-hook-form + zod)
+\`\`\`tsx
+// src/components/<Name>Form/<Name>Form.tsx
+'use client';
+
+import { useForm } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { z } from 'zod';
+
+const <name>Schema = z.object({
+  email: z.string().email('Invalid email'),
+  password: z.string().min(8, 'Min 8 characters'),
+});
+
+type <Name>FormData = z.infer<typeof <name>Schema>;
+
+export function <Name>Form() {
+  const {
+    register,
+    handleSubmit,
+    formState: { errors, isSubmitting },
+  } = useForm<<Name>FormData>({
+    resolver: zodResolver(<name>Schema),
+    defaultValues: { email: '', password: '' },
+  });
+
+  const onSubmit = handleSubmit(async (data) => {
+    // submit logic
+  });
+
+  return (
+    <form onSubmit={onSubmit} className="space-y-4">
+      <div>
+        <label htmlFor="email">Email</label>
+        <input id="email" type="email" {...register('email')} />
+        {errors.email && <p className="text-error">{errors.email.message}</p>}
+      </div>
+      <button type="submit" disabled={isSubmitting}>
+        {isSubmitting ? 'Submitting...' : 'Submit'}
+      </button>
+    </form>
+  );
+}
+\`\`\`
+
+## Checklist
+- [ ] Schema defined with zod; type inferred with \`z.infer\`.
+- [ ] \`zodResolver\` connects schema to react-hook-form.
+- [ ] Each input has \`id\`, \`label\`, and error display.
+- [ ] \`isSubmitting\` disables submit button during submission.
+- [ ] Server errors mapped to \`setError\` if applicable.
+- [ ] Accessible: labels associated, errors announced.
+`;
+
+      files['.github/skills/create-error-boundary.md'] = `# Skill: Create an Error Boundary
+
+## Template
+\`\`\`tsx
+// src/components/ErrorBoundary/ErrorBoundary.tsx
+'use client';
+
+import { Component, type ReactNode } from 'react';
+
+interface Props {
+  children: ReactNode;
+  fallback?: ReactNode;
+}
+
+interface State {
+  hasError: boolean;
+  error?: Error;
+}
+
+export class ErrorBoundary extends Component<Props, State> {
+  state: State = { hasError: false };
+
+  static getDerivedStateFromError(error: Error): State {
+    return { hasError: true, error };
+  }
+
+  render() {
+    if (this.state.hasError) {
+      return this.props.fallback ?? (
+        <div className="p-4 text-center">
+          <h2>Something went wrong</h2>
+          <button onClick={() => this.setState({ hasError: false })}>
+            Try again
+          </button>
+        </div>
+      );
+    }
+    return this.props.children;
+  }
+}
+\`\`\`
+
+## Usage
+\`\`\`tsx
+<ErrorBoundary fallback={<ErrorFallback />}>
+  <ComponentThatMightThrow />
+</ErrorBoundary>
+\`\`\`
+
+## Checklist
+- [ ] Class component (only way to catch errors).
+- [ ] \`getDerivedStateFromError\` updates state.
+- [ ] Fallback UI provided or default rendered.
+- [ ] Reset button to retry after error.
+`;
+
+      files['.github/skills/react-testing.md'] = `# Skill: Test React Components
+
+## Unit Test Template (Jest + React Testing Library)
+\`\`\`tsx
+// src/components/<Name>/<Name>.test.tsx
+import { render, screen, fireEvent, waitFor } from '@testing-library/react';
+import userEvent from '@testing-library/user-event';
+import { <Name> } from './<Name>';
+
+describe('<Name>', () => {
+  it('renders correctly', () => {
+    render(<<Name> />);
+    expect(screen.getByRole('heading')).toBeInTheDocument();
+  });
+
+  it('handles click', async () => {
+    const user = userEvent.setup();
+    const onClick = jest.fn();
+    render(<<Name> onClick={onClick} />);
+    await user.click(screen.getByRole('button'));
+    expect(onClick).toHaveBeenCalledTimes(1);
+  });
+
+  it('shows loading state', () => {
+    render(<<Name> isLoading />);
+    expect(screen.getByTestId('skeleton')).toBeInTheDocument();
+  });
+
+  it('shows error state', () => {
+    render(<<Name> error="Failed" />);
+    expect(screen.getByText('Failed')).toBeInTheDocument();
+  });
+});
+\`\`\`
+
+## Hook Test Template
+\`\`\`tsx
+import { renderHook, act } from '@testing-library/react';
+import { use<Name> } from './use<Name>';
+
+describe('use<Name>', () => {
+  it('returns initial state', () => {
+    const { result } = renderHook(() => use<Name>());
+    expect(result.current.state).toBe('initial');
+  });
+
+  it('updates state on action', () => {
+    const { result } = renderHook(() => use<Name>());
+    act(() => result.current.doAction());
+    expect(result.current.state).toBe('updated');
+  });
+});
+\`\`\`
+
+## Checklist
+- [ ] Test happy path, loading, error, and empty states.
+- [ ] Use \`userEvent\` for interactions (not \`fireEvent\`).
+- [ ] Query by role/label/text (not test-id when possible).
+- [ ] Mock external dependencies (API calls, hooks).
+- [ ] Async operations wrapped in \`waitFor\`.
+`;
+
+      files['.github/skills/react-performance.md'] = `# Skill: Optimize React Performance
+
+## Memoization Patterns
+\`\`\`tsx
+// Memoize expensive components
+const ExpensiveList = React.memo(function ExpensiveList({ items }: Props) {
+  return <ul>{items.map(item => <li key={item.id}>{item.name}</li>)}</ul>;
+});
+
+// Memoize callbacks passed to children
+const handleClick = useCallback((id: string) => {
+  setSelected(id);
+}, []); // empty deps if no dependencies
+
+// Memoize expensive computations
+const sortedItems = useMemo(() => {
+  return items.slice().sort((a, b) => a.name.localeCompare(b.name));
+}, [items]);
+\`\`\`
+
+## List Virtualization
+\`\`\`tsx
+import { useVirtualizer } from '@tanstack/react-virtual';
+
+function VirtualList({ items }: { items: Item[] }) {
+  const parentRef = useRef<HTMLDivElement>(null);
+  const virtualizer = useVirtualizer({
+    count: items.length,
+    getScrollElement: () => parentRef.current,
+    estimateSize: () => 50,
+  });
+
+  return (
+    <div ref={parentRef} className="h-[500px] overflow-auto">
+      <div style={{ height: virtualizer.getTotalSize() }}>
+        {virtualizer.getVirtualItems().map(virtualItem => (
+          <div
+            key={virtualItem.key}
+            style={{ position: 'absolute', top: 0, transform: \`translateY(\${virtualItem.start}px)\` }}
+          >
+            {items[virtualItem.index].name}
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+\`\`\`
+
+## Code Splitting
+\`\`\`tsx
+// Dynamic import for heavy components
+const HeavyChart = dynamic(() => import('./HeavyChart'), {
+  loading: () => <ChartSkeleton />,
+  ssr: false,
+});
+\`\`\`
+
+## Checklist
+- [ ] \`React.memo\` for components receiving same props.
+- [ ] \`useCallback\` for handlers passed to memoized children.
+- [ ] \`useMemo\` for expensive computations in render.
+- [ ] Virtualization for lists > 100 items.
+- [ ] Dynamic imports for below-fold heavy components.
+- [ ] No anonymous functions in JSX props.
+`;
+   }
+
+   // ── Next.js skills ─────────────────────────────────────────────
+
+   if (stacks.includes('nextjs')) {
+      files['.github/skills/create-server-action.md'] = `# Skill: Create a Next.js Server Action
+
+## Template
+\`\`\`tsx
+// app/actions/<name>.ts
+'use server';
+
+import { z } from 'zod';
+import { revalidatePath } from 'next/cache';
+import { redirect } from 'next/navigation';
+
+const <name>Schema = z.object({
+  name: z.string().min(1),
+  email: z.string().email(),
+});
+
+export async function <name>Action(formData: FormData) {
+  // 1. Validate input
+  const parsed = <name>Schema.safeParse({
+    name: formData.get('name'),
+    email: formData.get('email'),
+  });
+
+  if (!parsed.success) {
+    return { error: 'Invalid input', issues: parsed.error.issues };
+  }
+
+  // 2. Perform mutation
+  try {
+    // await db.insert(...).values(parsed.data)
+  } catch (err) {
+    return { error: 'Failed to save' };
+  }
+
+  // 3. Revalidate cache
+  revalidatePath('/<path>');
+
+  // 4. Redirect (optional)
+  redirect('/<path>/success');
+}
+\`\`\`
+
+## Usage in Client Component
+\`\`\`tsx
+'use client';
+
+import { useActionState } from 'react';
+import { <name>Action } from './actions/<name>';
+
+export function Form() {
+  const [state, formAction, isPending] = useActionState(<name>Action, null);
+
+  return (
+    <form action={formAction}>
+      <input name="name" required />
+      <input name="email" type="email" required />
+      <button disabled={isPending}>Submit</button>
+      {state?.error && <p className="text-error">{state.error}</p>}
+    </form>
+  );
+}
+\`\`\`
+
+## Checklist
+- [ ] \`'use server'\` directive at file top.
+- [ ] Input validated with Zod or equivalent.
+- [ ] Returns error object on failure; never throws to client.
+- [ ] \`revalidatePath\` or \`revalidateTag\` after mutation.
+- [ ] \`redirect()\` called only after successful mutation.
+- [ ] \`useActionState\` or \`useFormStatus\` for pending state.
+`;
+
+      files['.github/skills/create-layout.md'] = `# Skill: Create a Next.js Layout
+
+## Template
+\`\`\`tsx
+// app/<route>/layout.tsx
+import type { Metadata } from 'next';
+
+export const metadata: Metadata = {
+  title: { template: '%s | App', default: 'App' },
+  description: 'App description',
+};
+
+interface LayoutProps {
+  children: React.ReactNode;
+  params: { /* route params */ };
+}
+
+export default function <Name>Layout({ children, params }: LayoutProps) {
+  return (
+    <div className="flex min-h-screen">
+      <nav className="w-64 border-r">
+        {/* Navigation */}
+      </nav>
+      <main className="flex-1 p-6">
+        {children}
+      </main>
+    </div>
+  );
+}
+\`\`\`
+
+## Nested Layouts
+\`\`\`
+app/
+├── layout.tsx          // Root layout (required)
+├── (auth)/
+│   ├── layout.tsx      // Auth group layout
+│   ├── login/
+│   │   └── page.tsx
+│   └── register/
+│       └── page.tsx
+└── dashboard/
+    ├── layout.tsx      // Dashboard layout
+    └── page.tsx
+\`\`\`
+
+## Checklist
+- [ ] Root layout has \`<html>\` and \`<body>\` tags.
+- [ ] Metadata exported for SEO (title template for nested).
+- [ ] \`children\` prop rendered in layout.
+- [ ] Route groups \`(group)\` for shared layouts without URL impact.
+- [ ] Shared UI components (nav, sidebar) in layouts, not pages.
+`;
+
+      files['.github/skills/create-loading-error.md'] = `# Skill: Create Loading & Error States
+
+## Loading State (loading.tsx)
+\`\`\`tsx
+// app/<route>/loading.tsx
+export default function Loading() {
+  return (
+    <div className="animate-pulse space-y-4">
+      <div className="h-8 w-1/3 bg-muted rounded" />
+      <div className="h-32 bg-muted rounded" />
+      <div className="h-32 bg-muted rounded" />
+    </div>
+  );
+}
+\`\`\`
+
+## Error State (error.tsx)
+\`\`\`tsx
+'use client';
+
+// app/<route>/error.tsx
+import { useEffect } from 'react';
+import { Button } from '@/components/ui/button';
+
+interface ErrorProps {
+  error: Error & { digest?: string };
+  reset: () => void;
+}
+
+export default function Error({ error, reset }: ErrorProps) {
+  useEffect(() => {
+    console.error(error);
+  }, [error]);
+
+  return (
+    <div className="flex flex-col items-center justify-center min-h-[400px] gap-4">
+      <h2 className="text-xl font-semibold">Something went wrong</h2>
+      <p className="text-muted-foreground">{error.message}</p>
+      <Button onClick={reset}>Try again</Button>
+    </div>
+  );
+}
+\`\`\`
+
+## Not Found (not-found.tsx)
+\`\`\`tsx
+// app/<route>/not-found.tsx
+import Link from 'next/link';
+
+export default function NotFound() {
+  return (
+    <div className="flex flex-col items-center justify-center min-h-[400px] gap-4">
+      <h2 className="text-2xl font-bold">Not Found</h2>
+      <p className="text-muted-foreground">The page you're looking for doesn't exist.</p>
+      <Link href="/" className="text-primary underline">Go home</Link>
+    </div>
+  );
+}
+\`\`\`
+
+## Checklist
+- [ ] \`loading.tsx\` created for every route with async data.
+- [ ] \`error.tsx\` is a Client Component (\`'use client'\`).
+- [ ] Error boundary calls \`reset()\` to retry.
+- [ ] \`not-found.tsx\` for 404 handling.
+- [ ] \`notFound()\` function called when resource missing.
+`;
+
+      files['.github/skills/nextjs-middleware.md'] = `# Skill: Create Next.js Middleware
+
+## Template
+\`\`\`ts
+// middleware.ts (at project root)
+import { NextResponse } from 'next/server';
+import type { NextRequest } from 'next/server';
+
+export function middleware(request: NextRequest) {
+  const { pathname } = request.nextUrl;
+  const token = request.cookies.get('token')?.value;
+
+  // Protected routes
+  const protectedPaths = ['/dashboard', '/settings'];
+  const isProtected = protectedPaths.some(path => pathname.startsWith(path));
+
+  if (isProtected && !token) {
+    const loginUrl = new URL('/login', request.url);
+    loginUrl.searchParams.set('callbackUrl', pathname);
+    return NextResponse.redirect(loginUrl);
+  }
+
+  // Redirect authenticated users away from auth pages
+  const authPaths = ['/login', '/register'];
+  const isAuthPage = authPaths.some(path => pathname.startsWith(path));
+
+  if (isAuthPage && token) {
+    return NextResponse.redirect(new URL('/dashboard', request.url));
+  }
+
+  return NextResponse.next();
+}
+
+export const config = {
+  matcher: [
+    '/dashboard/:path*',
+    '/settings/:path*',
+    '/login',
+    '/register',
+  ],
+};
+\`\`\`
+
+## Checklist
+- [ ] \`middleware.ts\` at project root (not in \`app/\`).
+- [ ] \`matcher\` config specifies routes to run on.
+- [ ] Uses \`NextResponse.redirect()\` for redirects.
+- [ ] Cookies accessed via \`request.cookies\`.
+- [ ] URL manipulation via \`new URL()\`.
+- [ ] Returns \`NextResponse.next()\` to continue.
+`;
+
+      files['.github/skills/nextjs-data-fetching.md'] = `# Skill: Next.js Data Fetching Patterns
+
+## Server Component Fetching
+\`\`\`tsx
+// app/<route>/page.tsx
+import { notFound } from 'next/navigation';
+
+interface PageProps {
+  params: { id: string };
+}
+
+async function getData(id: string) {
+  const res = await fetch(\`https://api.example.com/items/\${id}\`, {
+    next: { revalidate: 60 }, // ISR: revalidate every 60s
+    // OR: cache: 'no-store' // SSR: no caching
+  });
+
+  if (!res.ok) {
+    if (res.status === 404) notFound();
+    throw new Error('Failed to fetch');
+  }
+
+  return res.json();
+}
+
+export default async function Page({ params }: PageProps) {
+  const data = await getData(params.id);
+
+  return <div>{data.name}</div>;
+}
+\`\`\`
+
+## Parallel Fetching
+\`\`\`tsx
+async function Page() {
+  // Fetch in parallel
+  const [users, posts] = await Promise.all([
+    fetch('/api/users').then(r => r.json()),
+    fetch('/api/posts').then(r => r.json()),
+  ]);
+
+  return (
+    <>
+      <UserList users={users} />
+      <PostList posts={posts} />
+    </>
+  );
+}
+\`\`\`
+
+## Client-Side Fetching (useSWR)
+\`\`\`tsx
+'use client';
+
+import useSWR from 'swr';
+
+const fetcher = (url: string) => fetch(url).then(r => r.json());
+
+export function useUser(id: string) {
+  const { data, error, isLoading, mutate } = useSWR(\`/api/users/\${id}\`, fetcher);
+
+  return { user: data, error, isLoading, refresh: mutate };
+}
+\`\`\`
+
+## Caching Strategies
+| Strategy | Config | Use Case |
+|----------|--------|----------|
+| Static | \`cache: 'force-cache'\` | Build-time data, rarely changes |
+| ISR | \`next: { revalidate: 60 }\` | Periodic updates, SEO-friendly |
+| Dynamic | \`cache: 'no-store'\` | User-specific, real-time data |
+| On-demand | \`revalidatePath/tag()\` | After mutations |
+
+## Checklist
+- [ ] Fetch in Server Components when possible.
+- [ ] Use \`revalidate\` for ISR; \`no-store\` for dynamic.
+- [ ] \`notFound()\` for 404; throw for other errors.
+- [ ] Parallel fetch with \`Promise.all\` for independent data.
+- [ ] Client-side: useSWR or React Query for interactivity.
+- [ ] \`revalidatePath\` or \`revalidateTag\` after mutations.
 `;
    }
 

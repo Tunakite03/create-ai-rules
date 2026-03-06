@@ -12,11 +12,12 @@ import { pythonRules } from './rules/stacks/python.js';
 import { unityRules } from './rules/stacks/unity.js';
 import { goRules } from './rules/stacks/go.js';
 import { flutterRules } from './rules/stacks/flutter.js';
+import { nextjsRules } from './rules/stacks/nextjs.js';
 
-export const VALID_STACKS = new Set(['ts', 'react', 'node', 'nestjs', 'python', 'unity', 'go', 'flutter']);
+export const VALID_STACKS = new Set(['ts', 'react', 'node', 'nestjs', 'nextjs', 'python', 'unity', 'go', 'flutter']);
 export const VALID_VERBOSITY = new Set(['minimal', 'standard', 'strict']);
 
-const TS_STACKS = new Set(['ts', 'react', 'node', 'nestjs']);
+const TS_STACKS = new Set(['ts', 'react', 'node', 'nestjs', 'nextjs']);
 
 const STACK_RULE_BUILDERS = {
    ts: tsRules,
@@ -27,6 +28,7 @@ const STACK_RULE_BUILDERS = {
    unity: unityRules,
    go: goRules,
    flutter: flutterRules,
+   nextjs: nextjsRules,
 };
 
 function normalizeVerbosity(verbosity = 'standard') {
