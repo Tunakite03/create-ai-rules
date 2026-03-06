@@ -182,11 +182,60 @@ Fix: <suggested improvement with code>
 - [ ] OpenAPI/Swagger documentation generated.
 `;
 
+   files['.github/skills/system-design.md'] = `# Skill: Design a Scalable Change
+
+## When to use
+- New feature crosses module or service boundaries.
+- New API, queue, cache, background job, or data model is introduced.
+- Expected traffic, data volume, or operational complexity can grow.
+- Failure handling, rollout, or rollback matters.
+
+## 1. Define the shape of the change
+- Identify primary actors and entry points.
+- Separate read path vs write path.
+- Define data ownership and invariants.
+- Capture expected volume, latency, and growth constraints.
+
+## 2. Choose boundaries deliberately
+- Keep transport thin; business logic in services/use-cases; persistence behind data-access modules.
+- Prefer feature-oriented modules and explicit contracts between them.
+- Avoid sharing mutable state across unrelated components.
+- Introduce queues, caches, or background jobs only for a clear bottleneck or decoupling need.
+
+## 3. Scalability checklist
+- [ ] List operations paginate and enforce max limits.
+- [ ] Expensive work is batched, streamed, or moved off the request path.
+- [ ] Query/index strategy matches the expected access pattern.
+- [ ] Concurrency is bounded; queue growth and backpressure are controlled.
+- [ ] Cache ownership, TTL, and invalidation strategy are explicit.
+
+## 4. Reliability & observability
+- [ ] Timeouts and cancellation defined for external I/O.
+- [ ] Retries are safe; idempotency or duplicate-handling is defined for mutating flows.
+- [ ] Partial failures, race conditions, and stale reads are considered.
+- [ ] Structured logs, metrics, and traces exist at important boundaries.
+- [ ] Health checks, alerts, or dashboards are identified for critical paths.
+
+## 5. Rollout & compatibility
+- [ ] Changes are additive and backward-compatible first.
+- [ ] Schema/API/event migrations support mixed-version rollout.
+- [ ] Backfills, feature flags, and rollback steps are defined.
+- [ ] Old readers/writers remain supported until migration completes.
+
+## Output format
+For non-trivial changes, provide:
+1. Problem and constraints
+2. Proposed architecture and boundaries
+3. Data flow or sequence
+4. Scalability and failure-mode analysis
+5. Rollout and compatibility plan
+`;
+
    files['.github/skills/create-migration.md'] = `# Skill: Create a Database Migration
 
 ## Principles
 - Migrations are **immutable** once deployed. Never edit a merged migration.
-- Every migration must be **reversible** — include both \\\`up\\\` and \\\`down\\\`.
+- Every migration must be **reversible** — include both \`up\` and \`down\`.
 - One logical change per migration file. Don't mix schema + data changes.
 - Test migrations against a copy of production data before deploying.
 
@@ -196,7 +245,7 @@ Fix: <suggested improvement with code>
 | Add column | Add as nullable or with default value |
 | Rename column | Add new → backfill → remove old (3 steps) |
 | Remove column | Stop reading → deploy → remove column |
-| Add index | Use \\\`CREATE INDEX CONCURRENTLY\\\` (Postgres) |
+| Add index | Use \`CREATE INDEX CONCURRENTLY\` (Postgres) |
 | Change type | Add new column → migrate data → swap → drop old |
 | Add NOT NULL | Add column nullable → backfill → add constraint |
 
@@ -249,11 +298,11 @@ CMD ["node", "dist/main.js"]
 
 ## Docker Rules
 - Use multi-stage builds to minimize image size.
-- Pin base image versions (e.g., \\\`node:20.11-alpine\\\`, not \\\`node:latest\\\`).
+- Pin base image versions (e.g., \`node:20.11-alpine\`, not \`node:latest\`).
 - Run as non-root user. Never run containers as root in production.
-- Use \\\`.dockerignore\\\` to exclude: \\\`node_modules\\\`, \\\`.git\\\`, \\\`.env\\\`, tests, docs.
+- Use \`.dockerignore\` to exclude: \`node_modules\`, \`.git\`, \`.env\`, tests, docs.
 - One process per container. Use Docker Compose for multi-service setups.
-- Health checks: \\\`HEALTHCHECK CMD curl -f http://localhost:3000/health || exit 1\\\`.
+- Health checks: \`HEALTHCHECK CMD curl -f http://localhost:3000/health || exit 1\`.
 
 ## Docker Compose Template
 \\\`\\\`\\\`yaml
@@ -350,7 +399,7 @@ volumes:
 \\\`\\\`\\\`
 
 ## Checklist
-- [ ] README has Quick Start that works in \\\`< 5 minutes\\\`.
+- [ ] README has Quick Start that works in \`< 5 minutes\`.
 - [ ] All public APIs documented with parameters, return types, examples.
 - [ ] Architecture decisions recorded as ADRs.
 - [ ] Changelog updated for every release.
@@ -445,16 +494,16 @@ Apply this workflow to every task, from small features to entire projects.
 
 **Output**: Detailed implementation plan with justification
 
-### Phase 3: User Validation
-**Goal**: Confirm plan before implementation.
+### Phase 3: Plan Validation
+**Goal**: Validate the plan before high-risk or irreversible work.
 
 **Actions**:
-1. Present the plan to user/team
-2. Clearly state assumptions and design decisions
-3. Explain why this approach is optimal
-4. Get explicit approval before proceeding
+1. Present the plan when the task is ambiguous, high-risk, or changes public APIs, schemas, or infrastructure
+2. Clearly state assumptions, trade-offs, and irreversible steps
+3. Get explicit approval before destructive, schema-changing, or architecture-changing work
+4. If the task is routine and low-risk, state the plan briefly and proceed with the smallest safe change
 
-**Output**: Approved plan ready for implementation
+**Output**: Validated plan with the right level of approval
 
 ### Phase 4: Incremental Implementation
 **Goal**: Build iteratively with continuous validation.
@@ -487,7 +536,7 @@ Apply this workflow to every task, from small features to entire projects.
 - [ ] Requirements clarified and documented
 - [ ] Multiple approaches considered
 - [ ] Optimal plan selected with reasoning
-- [ ] Plan validated before implementation
+- [ ] Plan validated or assumptions stated before implementation
 - [ ] Implemented incrementally with tests
 - [ ] Each increment works before moving on
 - [ ] Optimizations identified and applied
@@ -566,14 +615,18 @@ Before finalizing an instruction file:
    files['.github/skills/ai-agent-behavior.md'] = `# Skill: AI Agent Behavior Patterns
 
 ## Follow-Up Question Enforcement
-Before generating code, AI must ask clarifying questions when:
+Before generating code, AI should ask clarifying questions when ambiguity blocks a safe implementation:
 
 ### Ambiguity Triggers
 - Requirements mention "it" or "this" without clear referent
 - Multiple valid interpretations exist
 - Edge cases are not specified
-- Performance/security requirements are unclear
-- Integration points are not defined
+- Performance/security/scalability requirements are unclear
+- Integration points or ownership boundaries are not defined
+- Public API, schema, or migration impact is unclear
+
+### Safe Default
+If the task is low-risk and assumptions are reversible, state assumptions briefly and proceed with the smallest safe change.
 
 ### Required Questions
 1. **Scope**: "Should this handle [edge case X]?"
@@ -586,7 +639,7 @@ Before generating code, AI must ask clarifying questions when:
 Before implementing, AI should state understanding, key assumptions, edge cases to handle, and confidence level (High/Medium/Low).
 
 ## Reasoning Before Action
-AI should think step-by-step:
+AI should reason through a structured checklist internally and present concise conclusions:
 
 ### 1. Understand Context
 - Read relevant files
@@ -596,11 +649,13 @@ AI should think step-by-step:
 ### 2. Plan Approach
 - List possible solutions
 - Evaluate trade-offs
+- Check architecture, performance, and scalability implications
 - Select best approach with reasoning
 
 ### 3. Verify Before Implementing
 - Check assumptions
 - Confirm approach aligns with project standards
+- Confirm compatibility, observability, and rollout needs
 - Identify potential issues
 
 ### 4. Implement Incrementally
@@ -649,29 +704,29 @@ Structure AI responses with: Understanding, Approach, Implementation, Testing, a
    files['.github/skills/accessibility.md'] = `# Skill: Web Accessibility (WCAG 2.1 AA)
 
 ## Semantic HTML
-- Use correct elements: \\\`<nav>\\\`, \\\`<main>\\\`, \\\`<section>\\\`, \\\`<article>\\\`, \\\`<aside>\\\`, \\\`<header>\\\`, \\\`<footer>\\\`.
-- One \\\`<h1>\\\` per page. Headings in order: h1 → h2 → h3 (no skipping).
-- Use \\\`<button>\\\` for actions, \\\`<a>\\\` for navigation. Never \\\`<div onClick>\\\`.
-- Use \\\`<ul>\\\`/\\\`<ol>\\\` for lists. Use \\\`<table>\\\` for tabular data.
+- Use correct elements: \`<nav>\`, \`<main>\`, \`<section>\`, \`<article>\`, \`<aside>\`, \`<header>\`, \`<footer>\`.
+- One \`<h1>\` per page. Headings in order: h1 → h2 → h3 (no skipping).
+- Use \`<button>\` for actions, \`<a>\` for navigation. Never \`<div onClick>\`.
+- Use \`<ul>\`/ \`<ol>\` for lists. Use \`<table>\` for tabular data.
 
 ## Images & Media
-- All \\\`<img>\\\` must have \\\`alt\\\` text. Decorative images: \\\`alt=""\\\`.
+- All \`<img>\` must have \`alt\` text. Decorative images: \`alt=""\`.
 - Complex images (charts, diagrams) need extended descriptions.
 - Videos need captions. Audio needs transcripts.
 
 ## Forms
-- Every input must have a visible \\\`<label>\\\` (or \\\`aria-label\\\`).
-- Group related fields with \\\`<fieldset>\\\` + \\\`<legend>\\\`.
-- Error messages linked to inputs via \\\`aria-describedby\\\`.
-- Required fields marked with \\\`aria-required="true"\\\`.
+- Every input must have a visible \`<label>\` (or \`aria-label\`).
+- Group related fields with \`<fieldset>\` + \`<legend>\`.
+- Error messages linked to inputs via \`aria-describedby\`.
+- Required fields marked with \`aria-required="true"\`.
 - Focus moves to the first error on submit.
 
 ## Keyboard Navigation
 - All interactive elements reachable via Tab key.
-- Visible focus indicator (never \\\`outline: none\\\` without replacement).
+- Visible focus indicator (never \`outline: none\` without replacement).
 - Escape closes modals/dropdowns. Enter/Space activates buttons.
 - Focus trapping inside modals (Tab cycles within modal).
-- Skip links: \\\`<a href="#main" class="sr-only focus:not-sr-only">Skip to content</a>\\\`.
+- Skip links: \`<a href="#main" class="sr-only focus:not-sr-only">Skip to content</a>\`.
 
 ## Color & Contrast
 - Text contrast ratio: **4.5:1** minimum (AA). Large text: **3:1**.
@@ -680,10 +735,10 @@ Structure AI responses with: Understanding, Approach, Implementation, Testing, a
 
 ## ARIA Rules
 - First rule of ARIA: don't use ARIA if native HTML works.
-- \\\`aria-label\\\` for elements without visible text.
-- \\\`aria-live="polite"\\\` for dynamic content updates (toasts, loading).
-- \\\`role="alert"\\\` for error messages.
-- \\\`aria-expanded\\\` for collapsible sections and dropdowns.
+- \`aria-label\` for elements without visible text.
+- \`aria-live="polite"\` for dynamic content updates (toasts, loading).
+- \`role="alert"\` for error messages.
+- \`aria-expanded\` for collapsible sections and dropdowns.
 
 ## Testing Tools
 - Lighthouse accessibility audit (Chrome DevTools).
@@ -704,7 +759,7 @@ Structure AI responses with: Understanding, Approach, Implementation, Testing, a
 
    // ── TypeScript / React / Node skills ─────────────────────────
 
-   if (stacks.some((s) => ['ts', 'react', 'node', 'nestjs'].includes(s))) {
+   if (stacks.some((s) => ['ts', 'react', 'node', 'nestjs', 'nextjs'].includes(s))) {
       files['.github/skills/create-service.md'] = `# Skill: Create a TypeScript Service
 
 ## Template
@@ -730,7 +785,10 @@ export class <Name>Service {
 ## Checklist
 - [ ] All public methods have explicit return types.
 - [ ] Input validated at the start of each method.
+- [ ] Service owns use-case orchestration; framework or UI concerns stay outside.
 - [ ] Dependencies injected via constructor (no global imports).
+- [ ] Write methods define transaction or idempotency boundaries explicitly.
+- [ ] External I/O is bounded (timeouts/cancellation where available) and safe structured logs do not leak secrets.
 - [ ] Unit tests mock all injected dependencies.
 - [ ] Errors thrown as typed custom error classes.
 `;
@@ -777,7 +835,7 @@ const toUserId = (id: string): UserId => id as UserId;
 
    // ── React skills ──────────────────────────────────────────────
 
-   if (stacks.includes('react')) {
+   if (stacks.some((s) => ['react', 'nextjs'].includes(s))) {
       files['.github/skills/create-component.md'] = `# Skill: Create a React Component
 
 ## Template
@@ -895,6 +953,579 @@ export default async function <Name>Page({ params, searchParams }: PageProps) {
 - [ ] Page container uses \`container mx-auto px-4 md:px-6\`.
 - [ ] Performance: Heavy client components are dynamically imported (\`next/dynamic\`).
 `;
+
+      files['.github/skills/create-form.md'] = `# Skill: Create a React Form
+
+## Template (react-hook-form + zod)
+\`\`\`tsx
+// src/components/<Name>Form/<Name>Form.tsx
+'use client';
+
+import { useForm } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { z } from 'zod';
+
+const <name>Schema = z.object({
+  email: z.string().email('Invalid email'),
+  password: z.string().min(8, 'Min 8 characters'),
+});
+
+type <Name>FormData = z.infer<typeof <name>Schema>;
+
+export function <Name>Form() {
+  const {
+    register,
+    handleSubmit,
+    formState: { errors, isSubmitting },
+  } = useForm<<Name>FormData>({
+    resolver: zodResolver(<name>Schema),
+    defaultValues: { email: '', password: '' },
+  });
+
+  const onSubmit = handleSubmit(async (data) => {
+    // submit logic
+  });
+
+  return (
+    <form onSubmit={onSubmit} className="space-y-4">
+      <div>
+        <label htmlFor="email">Email</label>
+        <input id="email" type="email" {...register('email')} />
+        {errors.email && <p className="text-error">{errors.email.message}</p>}
+      </div>
+      <button type="submit" disabled={isSubmitting}>
+        {isSubmitting ? 'Submitting...' : 'Submit'}
+      </button>
+    </form>
+  );
+}
+\`\`\`
+
+## Checklist
+- [ ] Schema defined with zod; type inferred with \`z.infer\`.
+- [ ] \`zodResolver\` connects schema to react-hook-form.
+- [ ] Each input has \`id\`, \`label\`, and error display.
+- [ ] \`isSubmitting\` disables submit button during submission.
+- [ ] Server errors mapped to \`setError\` if applicable.
+- [ ] Accessible: labels associated, errors announced.
+`;
+
+      files['.github/skills/create-error-boundary.md'] = `# Skill: Create an Error Boundary
+
+## Template
+\`\`\`tsx
+// src/components/ErrorBoundary/ErrorBoundary.tsx
+'use client';
+
+import { Component, type ReactNode } from 'react';
+
+interface Props {
+  children: ReactNode;
+  fallback?: ReactNode;
+}
+
+interface State {
+  hasError: boolean;
+  error?: Error;
+}
+
+export class ErrorBoundary extends Component<Props, State> {
+  state: State = { hasError: false };
+
+  static getDerivedStateFromError(error: Error): State {
+    return { hasError: true, error };
+  }
+
+  render() {
+    if (this.state.hasError) {
+      return this.props.fallback ?? (
+        <div className="p-4 text-center">
+          <h2>Something went wrong</h2>
+          <button onClick={() => this.setState({ hasError: false })}>
+            Try again
+          </button>
+        </div>
+      );
+    }
+    return this.props.children;
+  }
+}
+\`\`\`
+
+## Usage
+\`\`\`tsx
+<ErrorBoundary fallback={<ErrorFallback />}>
+  <ComponentThatMightThrow />
+</ErrorBoundary>
+\`\`\`
+
+## Checklist
+- [ ] Class component (only way to catch errors).
+- [ ] \`getDerivedStateFromError\` updates state.
+- [ ] Fallback UI provided or default rendered.
+- [ ] Reset button to retry after error.
+`;
+
+      files['.github/skills/react-testing.md'] = `# Skill: Test React Components
+
+## Unit Test Template (Jest + React Testing Library)
+\`\`\`tsx
+// src/components/<Name>/<Name>.test.tsx
+import { render, screen, fireEvent, waitFor } from '@testing-library/react';
+import userEvent from '@testing-library/user-event';
+import { <Name> } from './<Name>';
+
+describe('<Name>', () => {
+  it('renders correctly', () => {
+    render(<<Name> />);
+    expect(screen.getByRole('heading')).toBeInTheDocument();
+  });
+
+  it('handles click', async () => {
+    const user = userEvent.setup();
+    const onClick = jest.fn();
+    render(<<Name> onClick={onClick} />);
+    await user.click(screen.getByRole('button'));
+    expect(onClick).toHaveBeenCalledTimes(1);
+  });
+
+  it('shows loading state', () => {
+    render(<<Name> isLoading />);
+    expect(screen.getByTestId('skeleton')).toBeInTheDocument();
+  });
+
+  it('shows error state', () => {
+    render(<<Name> error="Failed" />);
+    expect(screen.getByText('Failed')).toBeInTheDocument();
+  });
+});
+\`\`\`
+
+## Hook Test Template
+\`\`\`tsx
+import { renderHook, act } from '@testing-library/react';
+import { use<Name> } from './use<Name>';
+
+describe('use<Name>', () => {
+  it('returns initial state', () => {
+    const { result } = renderHook(() => use<Name>());
+    expect(result.current.state).toBe('initial');
+  });
+
+  it('updates state on action', () => {
+    const { result } = renderHook(() => use<Name>());
+    act(() => result.current.doAction());
+    expect(result.current.state).toBe('updated');
+  });
+});
+\`\`\`
+
+## Checklist
+- [ ] Test happy path, loading, error, and empty states.
+- [ ] Use \`userEvent\` for interactions (not \`fireEvent\`).
+- [ ] Query by role/label/text (not test-id when possible).
+- [ ] Mock external dependencies (API calls, hooks).
+- [ ] Async operations wrapped in \`waitFor\`.
+`;
+
+      files['.github/skills/react-performance.md'] = `# Skill: Optimize React Performance
+
+## Memoization Patterns
+\`\`\`tsx
+// Memoize expensive components
+const ExpensiveList = React.memo(function ExpensiveList({ items }: Props) {
+  return <ul>{items.map(item => <li key={item.id}>{item.name}</li>)}</ul>;
+});
+
+// Memoize callbacks passed to children
+const handleClick = useCallback((id: string) => {
+  setSelected(id);
+}, []); // empty deps if no dependencies
+
+// Memoize expensive computations
+const sortedItems = useMemo(() => {
+  return items.slice().sort((a, b) => a.name.localeCompare(b.name));
+}, [items]);
+\`\`\`
+
+## List Virtualization
+\`\`\`tsx
+import { useVirtualizer } from '@tanstack/react-virtual';
+
+function VirtualList({ items }: { items: Item[] }) {
+  const parentRef = useRef<HTMLDivElement>(null);
+  const virtualizer = useVirtualizer({
+    count: items.length,
+    getScrollElement: () => parentRef.current,
+    estimateSize: () => 50,
+  });
+
+  return (
+    <div ref={parentRef} className="h-[500px] overflow-auto">
+      <div style={{ height: virtualizer.getTotalSize() }}>
+        {virtualizer.getVirtualItems().map(virtualItem => (
+          <div
+            key={virtualItem.key}
+            style={{ position: 'absolute', top: 0, transform: \`translateY(\${virtualItem.start}px)\` }}
+          >
+            {items[virtualItem.index].name}
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+\`\`\`
+
+## Code Splitting
+\`\`\`tsx
+// Dynamic import for heavy components
+const HeavyChart = dynamic(() => import('./HeavyChart'), {
+  loading: () => <ChartSkeleton />,
+  ssr: false,
+});
+\`\`\`
+
+## Checklist
+- [ ] \`React.memo\` for components receiving same props.
+- [ ] \`useCallback\` for handlers passed to memoized children.
+- [ ] \`useMemo\` for expensive computations in render.
+- [ ] Virtualization for lists > 100 items.
+- [ ] Dynamic imports for below-fold heavy components.
+- [ ] No anonymous functions in JSX props.
+`;
+   }
+
+   // ── Next.js skills ─────────────────────────────────────────────
+
+   if (stacks.includes('nextjs')) {
+      files['.github/skills/create-server-action.md'] = `# Skill: Create a Next.js Server Action
+
+## Template
+\`\`\`tsx
+// app/actions/<name>.ts
+'use server';
+
+import { z } from 'zod';
+import { revalidatePath } from 'next/cache';
+import { redirect } from 'next/navigation';
+
+const <name>Schema = z.object({
+  name: z.string().min(1),
+  email: z.string().email(),
+});
+
+export async function <name>Action(formData: FormData) {
+  // 1. Validate input
+  const parsed = <name>Schema.safeParse({
+    name: formData.get('name'),
+    email: formData.get('email'),
+  });
+
+  if (!parsed.success) {
+    return { error: 'Invalid input', issues: parsed.error.issues };
+  }
+
+  // 2. Perform mutation
+  try {
+    // await db.insert(...).values(parsed.data)
+  } catch (err) {
+    return { error: 'Failed to save' };
+  }
+
+  // 3. Revalidate cache
+  revalidatePath('/<path>');
+
+  // 4. Redirect (optional)
+  redirect('/<path>/success');
+}
+\`\`\`
+
+## Usage in Client Component
+\`\`\`tsx
+'use client';
+
+import { useActionState } from 'react';
+import { <name>Action } from './actions/<name>';
+
+export function Form() {
+  const [state, formAction, isPending] = useActionState(<name>Action, null);
+
+  return (
+    <form action={formAction}>
+      <input name="name" required />
+      <input name="email" type="email" required />
+      <button disabled={isPending}>Submit</button>
+      {state?.error && <p className="text-error">{state.error}</p>}
+    </form>
+  );
+}
+\`\`\`
+
+## Checklist
+- [ ] \`'use server'\` directive at file top.
+- [ ] Input validated with Zod or equivalent.
+- [ ] Returns error object on failure; never throws to client.
+- [ ] \`revalidatePath\` or \`revalidateTag\` after mutation.
+- [ ] \`redirect()\` called only after successful mutation.
+- [ ] \`useActionState\` or \`useFormStatus\` for pending state.
+`;
+
+      files['.github/skills/create-layout.md'] = `# Skill: Create a Next.js Layout
+
+## Template
+\`\`\`tsx
+// app/<route>/layout.tsx
+import type { Metadata } from 'next';
+
+export const metadata: Metadata = {
+  title: { template: '%s | App', default: 'App' },
+  description: 'App description',
+};
+
+interface LayoutProps {
+  children: React.ReactNode;
+  params: { /* route params */ };
+}
+
+export default function <Name>Layout({ children, params }: LayoutProps) {
+  return (
+    <div className="flex min-h-screen">
+      <nav className="w-64 border-r">
+        {/* Navigation */}
+      </nav>
+      <main className="flex-1 p-6">
+        {children}
+      </main>
+    </div>
+  );
+}
+\`\`\`
+
+## Nested Layouts
+\`\`\`
+app/
+├── layout.tsx          // Root layout (required)
+├── (auth)/
+│   ├── layout.tsx      // Auth group layout
+│   ├── login/
+│   │   └── page.tsx
+│   └── register/
+│       └── page.tsx
+└── dashboard/
+    ├── layout.tsx      // Dashboard layout
+    └── page.tsx
+\`\`\`
+
+## Checklist
+- [ ] Root layout has \`<html>\` and \`<body>\` tags.
+- [ ] Metadata exported for SEO (title template for nested).
+- [ ] \`children\` prop rendered in layout.
+- [ ] Route groups \`(group)\` for shared layouts without URL impact.
+- [ ] Shared UI components (nav, sidebar) in layouts, not pages.
+`;
+
+      files['.github/skills/create-loading-error.md'] = `# Skill: Create Loading & Error States
+
+## Loading State (loading.tsx)
+\`\`\`tsx
+// app/<route>/loading.tsx
+export default function Loading() {
+  return (
+    <div className="animate-pulse space-y-4">
+      <div className="h-8 w-1/3 bg-muted rounded" />
+      <div className="h-32 bg-muted rounded" />
+      <div className="h-32 bg-muted rounded" />
+    </div>
+  );
+}
+\`\`\`
+
+## Error State (error.tsx)
+\`\`\`tsx
+'use client';
+
+// app/<route>/error.tsx
+import { useEffect } from 'react';
+import { Button } from '@/components/ui/button';
+
+interface ErrorProps {
+  error: Error & { digest?: string };
+  reset: () => void;
+}
+
+export default function Error({ error, reset }: ErrorProps) {
+  useEffect(() => {
+    console.error(error);
+  }, [error]);
+
+  return (
+    <div className="flex flex-col items-center justify-center min-h-[400px] gap-4">
+      <h2 className="text-xl font-semibold">Something went wrong</h2>
+      <p className="text-muted-foreground">{error.message}</p>
+      <Button onClick={reset}>Try again</Button>
+    </div>
+  );
+}
+\`\`\`
+
+## Not Found (not-found.tsx)
+\`\`\`tsx
+// app/<route>/not-found.tsx
+import Link from 'next/link';
+
+export default function NotFound() {
+  return (
+    <div className="flex flex-col items-center justify-center min-h-[400px] gap-4">
+      <h2 className="text-2xl font-bold">Not Found</h2>
+      <p className="text-muted-foreground">The page you're looking for doesn't exist.</p>
+      <Link href="/" className="text-primary underline">Go home</Link>
+    </div>
+  );
+}
+\`\`\`
+
+## Checklist
+- [ ] \`loading.tsx\` created for every route with async data.
+- [ ] \`error.tsx\` is a Client Component (\`'use client'\`).
+- [ ] Error boundary calls \`reset()\` to retry.
+- [ ] \`not-found.tsx\` for 404 handling.
+- [ ] \`notFound()\` function called when resource missing.
+`;
+
+      files['.github/skills/nextjs-middleware.md'] = `# Skill: Create Next.js Middleware
+
+## Template
+\`\`\`ts
+// middleware.ts (at project root)
+import { NextResponse } from 'next/server';
+import type { NextRequest } from 'next/server';
+
+export function middleware(request: NextRequest) {
+  const { pathname } = request.nextUrl;
+  const token = request.cookies.get('token')?.value;
+
+  // Protected routes
+  const protectedPaths = ['/dashboard', '/settings'];
+  const isProtected = protectedPaths.some(path => pathname.startsWith(path));
+
+  if (isProtected && !token) {
+    const loginUrl = new URL('/login', request.url);
+    loginUrl.searchParams.set('callbackUrl', pathname);
+    return NextResponse.redirect(loginUrl);
+  }
+
+  // Redirect authenticated users away from auth pages
+  const authPaths = ['/login', '/register'];
+  const isAuthPage = authPaths.some(path => pathname.startsWith(path));
+
+  if (isAuthPage && token) {
+    return NextResponse.redirect(new URL('/dashboard', request.url));
+  }
+
+  return NextResponse.next();
+}
+
+export const config = {
+  matcher: [
+    '/dashboard/:path*',
+    '/settings/:path*',
+    '/login',
+    '/register',
+  ],
+};
+\`\`\`
+
+## Checklist
+- [ ] \`middleware.ts\` at project root (not in \`app/\`).
+- [ ] \`matcher\` config specifies routes to run on.
+- [ ] Uses \`NextResponse.redirect()\` for redirects.
+- [ ] Cookies accessed via \`request.cookies\`.
+- [ ] URL manipulation via \`new URL()\`.
+- [ ] Returns \`NextResponse.next()\` to continue.
+`;
+
+      files['.github/skills/nextjs-data-fetching.md'] = `# Skill: Next.js Data Fetching Patterns
+
+## Server Component Fetching
+\`\`\`tsx
+// app/<route>/page.tsx
+import { notFound } from 'next/navigation';
+
+interface PageProps {
+  params: { id: string };
+}
+
+async function getData(id: string) {
+  const res = await fetch(\`https://api.example.com/items/\${id}\`, {
+    next: { revalidate: 60 }, // ISR: revalidate every 60s
+    // OR: cache: 'no-store' // SSR: no caching
+  });
+
+  if (!res.ok) {
+    if (res.status === 404) notFound();
+    throw new Error('Failed to fetch');
+  }
+
+  return res.json();
+}
+
+export default async function Page({ params }: PageProps) {
+  const data = await getData(params.id);
+
+  return <div>{data.name}</div>;
+}
+\`\`\`
+
+## Parallel Fetching
+\`\`\`tsx
+async function Page() {
+  // Fetch in parallel
+  const [users, posts] = await Promise.all([
+    fetch('/api/users').then(r => r.json()),
+    fetch('/api/posts').then(r => r.json()),
+  ]);
+
+  return (
+    <>
+      <UserList users={users} />
+      <PostList posts={posts} />
+    </>
+  );
+}
+\`\`\`
+
+## Client-Side Fetching (useSWR)
+\`\`\`tsx
+'use client';
+
+import useSWR from 'swr';
+
+const fetcher = (url: string) => fetch(url).then(r => r.json());
+
+export function useUser(id: string) {
+  const { data, error, isLoading, mutate } = useSWR(\`/api/users/\${id}\`, fetcher);
+
+  return { user: data, error, isLoading, refresh: mutate };
+}
+\`\`\`
+
+## Caching Strategies
+| Strategy | Config | Use Case |
+|----------|--------|----------|
+| Static | \`cache: 'force-cache'\` | Build-time data, rarely changes |
+| ISR | \`next: { revalidate: 60 }\` | Periodic updates, SEO-friendly |
+| Dynamic | \`cache: 'no-store'\` | User-specific, real-time data |
+| On-demand | \`revalidatePath/tag()\` | After mutations |
+
+## Checklist
+- [ ] Fetch in Server Components when possible.
+- [ ] Use \`revalidate\` for ISR; \`no-store\` for dynamic.
+- [ ] \`notFound()\` for 404; throw for other errors.
+- [ ] Parallel fetch with \`Promise.all\` for independent data.
+- [ ] Client-side: useSWR or React Query for interactivity.
+- [ ] \`revalidatePath\` or \`revalidateTag\` after mutations.
+`;
    }
 
    // ── Node API skills ───────────────────────────────────────────
@@ -906,18 +1537,14 @@ export default async function <Name>Page({ params, searchParams }: PageProps) {
 \`\`\`typescript
 // src/routes/<resource>.routes.ts
 import { Router } from 'express'; // or equivalent
-import { z } from 'zod';
+import { validateCreateResource } from '../validation/<resource>.validation'; // use the existing project validation layer
 import { <Resource>Service } from '../services/<resource>.service';
 
 const router = Router();
 
-const Create<Resource>Schema = z.object({
-  // define body schema
-});
-
 router.post('/<resource>', async (req, res, next) => {
   try {
-    const body = Create<Resource>Schema.parse(req.body);
+    const body = validateCreateResource(req.body);
     const result = await <Resource>Service.create(body);
     res.status(201).json(result);
   } catch (err) {
@@ -929,13 +1556,15 @@ export default router;
 \`\`\`
 
 ## Checklist
-- [ ] Input validated with schema (Zod / Joi) — never trust raw req.body.
+- [ ] Input validated with the project's existing validation layer. If none exists, ask before adding a new library.
 - [ ] Correct HTTP status codes: 201 created, 200 ok, 400 bad input, 404 not found, 409 conflict.
 - [ ] Errors forwarded to \`next(err)\` — not swallowed.
 - [ ] Auth middleware applied where required.
 - [ ] Response shape consistent with rest of API.
+- [ ] List endpoints use pagination/filtering with bounded limits.
+- [ ] Mutating endpoints consider idempotency/retry safety when clients or queues can retry.
 - [ ] Integration test added for happy path + error cases.
-- [ ] Performance: DB calls are concurrent (\`Promise.all\`), no sync blocking calls.
+- [ ] Performance: downstream calls are bounded, concurrent where safe, and no sync blocking calls.
 `;
 
       files['.github/skills/create-middleware.md'] = `# Skill: Create Express Middleware
@@ -1063,25 +1692,33 @@ class <Name>:
 - [ ] Validators for non-trivial constraints.
 - [ ] Fields documented with \`Field(description=...)\`.
 `;
-   }
+}
 
-   // ── NestJS skills ──────────────────────────────────────────────
+// ── NestJS skills ──────────────────────────────────────────────
 
-   if (stacks.includes('nestjs')) {
-      files['.github/skills/create-nestjs-module.md'] = `# Skill: Create a NestJS Module
+if (stacks.includes('nestjs')) {
+  files['.github/skills/create-nestjs-module.md'] = `# Skill: Create a NestJS Module
 
 ## Template
 \\\`\\\`\\\`typescript
 // src/<feature>/<feature>.module.ts
 import { Module } from '@nestjs/common';
-import { <Feature>Controller } from './<feature>.controller';
-import { <Feature>Service } from './<feature>.service';
+import { <Feature>Controller } from './presentation/http/<feature>.controller';
+import { <Feature>Service } from './application/<feature>.service';
+import { <Feature>RepositoryToken } from './domain/ports/<feature>.repository';
+import { <Feature>RepositoryAdapter } from './infrastructure/persistence/<feature>.repository';
 
 @Module({
   imports: [],
   controllers: [<Feature>Controller],
-  providers: [<Feature>Service],
-  exports: [<Feature>Service], // export if other modules need this service
+  providers: [
+    <Feature>Service,
+    {
+      provide: <Feature>RepositoryToken,
+      useClass: <Feature>RepositoryAdapter,
+    },
+  ],
+  exports: [<Feature>Service], // export only the application API other modules need
 })
 export class <Feature>Module {}
 \\\`\\\`\\\`
@@ -1090,105 +1727,222 @@ export class <Feature>Module {}
 \\\`\\\`\\\`
 src/<feature>/
 ├── <feature>.module.ts
-├── <feature>.controller.ts
-├── <feature>.service.ts
-├── dto/
-│   ├── create-<feature>.dto.ts
-│   └── update-<feature>.dto.ts
-├── entities/
-│   └── <feature>.entity.ts
-├── <feature>.controller.spec.ts
-└── <feature>.service.spec.ts
+├── presentation/
+│   └── http/
+│       └── <feature>.controller.ts
+├── application/
+│   ├── <feature>.service.ts
+│   └── dto/
+│       ├── create-<feature>.dto.ts
+│       ├── update-<feature>.dto.ts
+│       ├── list-<feature>.query.dto.ts
+│       └── <feature>-response.dto.ts
+├── domain/
+│   ├── <feature>.model.ts
+│   ├── ports/
+│   │   └── <feature>.repository.ts
+│   └── errors/
+│       └── <feature>-not-found.error.ts
+├── infrastructure/
+│   └── persistence/
+│       └── <feature>.repository.ts
+└── __tests__/
+    ├── <feature>.controller.spec.ts
+    └── <feature>.service.spec.ts
 \\\`\\\`\\\`
 
 ## Checklist
 - [ ] Module registered in parent module's \\\`imports\\\` array.
-- [ ] Controller handles HTTP only — no business logic.
-- [ ] Service contains all business logic, injected via constructor.
-- [ ] DTOs created for all request bodies with \\\`class-validator\\\` decorators.
-- [ ] Entity defined with proper TypeORM/Prisma decorators.
-- [ ] Unit tests for service and controller.
-- [ ] Exports only what other modules need.
+- [ ] Module owns one feature/bounded context with clear presentation, application, domain, and infrastructure boundaries.
+- [ ] Controller handles HTTP only — no business logic, ORM access, or mapping rules.
+- [ ] Service orchestrates use cases; repositories/gateways handle persistence and external I/O.
+- [ ] DTOs model input/output contracts; do not reuse ORM entities as API contracts.
+- [ ] Adapters with external I/O are wired through DI tokens when a boundary is needed.
+- [ ] Mutating flows define transaction and idempotency boundaries explicitly.
+- [ ] Long-running work is moved to jobs/events instead of blocking request/response paths.
+- [ ] Exports are minimal — expose only the application API other modules need.
+- [ ] Tests cover controller boundary behavior and service orchestration.
 `;
 
-      files['.github/skills/create-nestjs-controller.md'] = `# Skill: Create a NestJS REST Controller
+  files['.github/skills/create-nestjs-service.md'] = `# Skill: Create a NestJS Application Service
 
 ## Template
 \\\`\\\`\\\`typescript
-// src/<feature>/<feature>.controller.ts
+// src/<feature>/application/<feature>.service.ts
+import { Inject, Injectable } from '@nestjs/common';
+import { <Feature>NotFoundError } from '../domain/errors/<feature>-not-found.error';
+import { <Feature>RepositoryToken } from '../domain/ports/<feature>.repository';
+import type { <Feature>Repository } from '../domain/ports/<feature>.repository';
+import type { Create<Feature>Dto } from './dto/create-<feature>.dto';
+import type { List<Feature>QueryDto } from './dto/list-<feature>.query.dto';
+import type { Update<Feature>Dto } from './dto/update-<feature>.dto';
+import type { <Feature>ResponseDto } from './dto/<feature>-response.dto';
+
+@Injectable()
+export class <Feature>Service {
+  constructor(
+    @Inject(<Feature>RepositoryToken)
+    private readonly repository: <Feature>Repository,
+  ) {}
+
+  async create(input: Create<Feature>Dto): Promise<<Feature>ResponseDto> {
+    // define transaction/idempotency boundary if this mutates state
+    const created = await this.repository.create(input);
+    return this.toResponse(created);
+  }
+
+  async findAll(query: List<Feature>QueryDto): Promise<{
+    data: <Feature>ResponseDto[];
+    meta: { page: number; limit: number; total: number };
+  }> {
+    const result = await this.repository.findAll(query);
+
+    return {
+      data: result.items.map((item) => this.toResponse(item)),
+      meta: result.meta,
+    };
+  }
+
+  async findOne(id: string): Promise<<Feature>ResponseDto> {
+    const feature = await this.repository.findById(id);
+    if (!feature) {
+      throw new <Feature>NotFoundError(id);
+    }
+
+    return this.toResponse(feature);
+  }
+
+  async update(id: string, input: Update<Feature>Dto): Promise<<Feature>ResponseDto> {
+    const existing = await this.repository.findById(id);
+    if (!existing) {
+      throw new <Feature>NotFoundError(id);
+    }
+
+    const updated = await this.repository.update(id, input);
+    return this.toResponse(updated);
+  }
+
+  async remove(id: string): Promise<void> {
+    await this.repository.delete(id);
+  }
+
+  private toResponse(model: {
+    id: string;
+    name: string;
+    email: string;
+    createdAt: Date;
+  }): <Feature>ResponseDto {
+    return {
+      id: model.id,
+      name: model.name,
+      email: model.email,
+      createdAt: model.createdAt,
+    };
+  }
+}
+\\\`\\\`\\\`
+
+## Checklist
+- [ ] Application services orchestrate use cases — no HTTP decorators or framework exceptions inside them.
+- [ ] Inject repository/gateway ports instead of ORM clients directly when module boundaries matter.
+- [ ] Write flows define transaction and idempotency boundaries explicitly.
+- [ ] Downstream I/O is bounded with timeouts/cancellation where available.
+- [ ] Domain errors are thrown from the application/domain layers and mapped at the HTTP boundary.
+- [ ] Mapping from domain model to response contract is centralized and deterministic.
+- [ ] Split very large modules into focused use cases instead of growing one god service.
+- [ ] Unit tests mock ports/gateways, not Nest internals.
+`;
+
+  files['.github/skills/create-nestjs-controller.md'] = `# Skill: Create a NestJS REST Controller
+
+## Template
+\\\`\\\`\\\`typescript
+// src/<feature>/presentation/http/<feature>.controller.ts
 import {
-  Controller, Get, Post, Put, Delete,
-  Param, Body, Query, HttpCode, HttpStatus,
-  ParseUUIDPipe, UsePipes, ValidationPipe,
+  Body,
+  Controller,
+  Delete,
+  Get,
+  HttpCode,
+  HttpStatus,
+  Param,
+  ParseUUIDPipe,
+  Patch,
+  Post,
+  Query,
 } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiResponse } from '@nestjs/swagger';
-import { <Feature>Service } from './<feature>.service';
-import { Create<Feature>Dto } from './dto/create-<feature>.dto';
-import { Update<Feature>Dto } from './dto/update-<feature>.dto';
+import { <Feature>Service } from '../../application/<feature>.service';
+import { Create<Feature>Dto } from '../../application/dto/create-<feature>.dto';
+import { Update<Feature>Dto } from '../../application/dto/update-<feature>.dto';
+import { List<Feature>QueryDto } from '../../application/dto/list-<feature>.query.dto';
+import { <Feature>ResponseDto } from '../../application/dto/<feature>-response.dto';
 
 @ApiTags('<feature>')
 @Controller('<feature>')
-@UsePipes(new ValidationPipe({ whitelist: true, forbidNonWhitelisted: true }))
 export class <Feature>Controller {
   constructor(private readonly <feature>Service: <Feature>Service) {}
 
   @Post()
   @ApiOperation({ summary: 'Create <feature>' })
-  @ApiResponse({ status: 201, description: 'Created successfully.' })
-  create(@Body() dto: Create<Feature>Dto) {
+  @ApiResponse({ status: 201, type: <Feature>ResponseDto })
+  create(@Body() dto: Create<Feature>Dto): Promise<<Feature>ResponseDto> {
     return this.<feature>Service.create(dto);
   }
 
   @Get()
-  @ApiOperation({ summary: 'List all <feature>s' })
-  findAll(@Query('page') page = 1, @Query('limit') limit = 20) {
-    return this.<feature>Service.findAll({ page: +page, limit: +limit });
+  @ApiOperation({ summary: 'List <feature>s' })
+  findAll(
+    @Query() query: List<Feature>QueryDto,
+  ): Promise<{ data: <Feature>ResponseDto[]; meta: { page: number; limit: number; total: number } }> {
+    return this.<feature>Service.findAll(query);
   }
 
   @Get(':id')
   @ApiOperation({ summary: 'Get <feature> by ID' })
-  findOne(@Param('id', ParseUUIDPipe) id: string) {
+  @ApiResponse({ status: 200, type: <Feature>ResponseDto })
+  findOne(@Param('id', ParseUUIDPipe) id: string): Promise<<Feature>ResponseDto> {
     return this.<feature>Service.findOne(id);
   }
 
-  @Put(':id')
-  @ApiOperation({ summary: 'Update <feature>' })
+  @Patch(':id')
+  @ApiOperation({ summary: 'Partially update <feature>' })
+  @ApiResponse({ status: 200, type: <Feature>ResponseDto })
   update(
     @Param('id', ParseUUIDPipe) id: string,
     @Body() dto: Update<Feature>Dto,
-  ) {
+  ): Promise<<Feature>ResponseDto> {
     return this.<feature>Service.update(id, dto);
   }
 
   @Delete(':id')
   @HttpCode(HttpStatus.NO_CONTENT)
   @ApiOperation({ summary: 'Delete <feature>' })
-  remove(@Param('id', ParseUUIDPipe) id: string) {
-    return this.<feature>Service.remove(id);
+  async remove(@Param('id', ParseUUIDPipe) id: string): Promise<void> {
+    await this.<feature>Service.remove(id);
   }
 }
 \\\`\\\`\\\`
 
 ## Checklist
-- [ ] All routes use proper HTTP method decorators.
+- [ ] All routes use proper HTTP method decorators and typed DTOs.
 - [ ] Request data extracted via \\\`@Param()\\\`, \\\`@Body()\\\`, \\\`@Query()\\\` — not raw \\\`req\\\`.
-- [ ] \\\`ValidationPipe\\\` applied with \\\`whitelist: true\\\`.
-- [ ] Swagger decorators for API documentation.
+- [ ] Prefer a global \\\`ValidationPipe\\\`; add per-route pipes only for feature-specific overrides.
+- [ ] List endpoints accept typed query DTOs with bounded limits — no ad-hoc numeric coercion in controller bodies.
+- [ ] Swagger decorators document request/response DTOs and status codes.
 - [ ] \\\`ParseUUIDPipe\\\` (or \\\`ParseIntPipe\\\`) for ID params.
-- [ ] No business logic — only calls to service methods.
-- [ ] Proper HTTP status codes for each operation.
+- [ ] No business logic — controller delegates to the application service/use case only.
+- [ ] Return response DTOs or paginated envelopes, not ORM entities.
+- [ ] Use \\\`@Patch()\\\` for partial updates; reserve \\\`@Put()\\\` for full replacement.
 - [ ] No long-running, CPU-heavy synchronous tasks inside route handlers (keeps event loop free).
 `;
 
-      files['.github/skills/create-nestjs-dto.md'] = `# Skill: Create NestJS DTOs
+  files['.github/skills/create-nestjs-dto.md'] = `# Skill: Create NestJS DTOs
 
 ## Create DTO
 \\\`\\\`\\\`typescript
-// src/<feature>/dto/create-<feature>.dto.ts
-import {
-  IsString, IsNotEmpty, IsEmail, IsOptional,
-  MinLength, MaxLength, IsEnum, IsNumber, Min,
-} from 'class-validator';
+// src/<feature>/application/dto/create-<feature>.dto.ts
+import { IsEmail, IsNotEmpty, IsOptional, IsString, MaxLength, MinLength } from 'class-validator';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 
 export class Create<Feature>Dto {
@@ -1197,54 +1951,80 @@ export class Create<Feature>Dto {
   @IsNotEmpty()
   @MinLength(2)
   @MaxLength(100)
-  name: string;
+  readonly name!: string;
 
   @ApiProperty({ description: 'Email address', example: 'user@example.com' })
   @IsEmail()
-  email: string;
+  readonly email!: string;
 
   @ApiPropertyOptional({ description: 'Optional description' })
   @IsOptional()
   @IsString()
   @MaxLength(500)
-  description?: string;
+  readonly description?: string;
 }
 \\\`\\\`\\\`
 
 ## Update DTO (using mapped types)
 \\\`\\\`\\\`typescript
-// src/<feature>/dto/update-<feature>.dto.ts
-import { PartialType } from '@nestjs/mapped-types';
+// src/<feature>/application/dto/update-<feature>.dto.ts
+import { PartialType } from '@nestjs/swagger';
 import { Create<Feature>Dto } from './create-<feature>.dto';
 
 export class Update<Feature>Dto extends PartialType(Create<Feature>Dto) {}
 \\\`\\\`\\\`
 
+## Query DTO
+\\\`\\\`\\\`typescript
+// src/<feature>/application/dto/list-<feature>.query.dto.ts
+import { Type } from 'class-transformer';
+import { ApiPropertyOptional } from '@nestjs/swagger';
+import { IsInt, IsOptional, Max, Min } from 'class-validator';
+
+export class List<Feature>QueryDto {
+  @ApiPropertyOptional({ default: 1, minimum: 1 })
+  @IsOptional()
+  @Type(() => Number)
+  @IsInt()
+  @Min(1)
+  readonly page: number = 1;
+
+  @ApiPropertyOptional({ default: 20, minimum: 1, maximum: 100 })
+  @IsOptional()
+  @Type(() => Number)
+  @IsInt()
+  @Min(1)
+  @Max(100)
+  readonly limit: number = 20;
+}
+\\\`\\\`\\\`
+
 ## Response DTO
 \\\`\\\`\\\`typescript
-// src/<feature>/dto/<feature>-response.dto.ts
+// src/<feature>/application/dto/<feature>-response.dto.ts
 import { Exclude, Expose } from 'class-transformer';
 
 @Exclude()
 export class <Feature>ResponseDto {
-  @Expose() id: string;
-  @Expose() name: string;
-  @Expose() email: string;
-  @Expose() createdAt: Date;
-  // password, internal fields etc. are excluded automatically
+  @Expose() id!: string;
+  @Expose() name!: string;
+  @Expose() email!: string;
+  @Expose() createdAt!: Date;
 }
 \\\`\\\`\\\`
 
 ## Checklist
-- [ ] Every field has \\\`class-validator\\\` decorators.
+- [ ] Separate create/update/query/response DTOs by use case; do not reuse ORM entities as transport contracts.
+- [ ] Every inbound field has \\\`class-validator\\\` decorators.
 - [ ] \\\`@ApiProperty()\\\` / \\\`@ApiPropertyOptional()\\\` for Swagger.
-- [ ] Update DTO extends \\\`PartialType(CreateDto)\\\` — DRY.
-- [ ] Response DTO uses \\\`@Exclude()\\\`/\\\`@Expose()\\\` to control output.
+- [ ] Update DTO extends \\\`PartialType(CreateDto)\\\` to stay consistent with docs.
+- [ ] Query DTOs bound pagination/filter limits and coerce primitive types safely.
+- [ ] Response DTOs expose only public fields; internal fields stay hidden.
 - [ ] Optional fields marked with \\\`@IsOptional()\\\` + \\\`?\\\` suffix.
 - [ ] No raw \\\`any\\\` types in DTOs.
 `;
 
-      files['.github/skills/create-nestjs-guard.md'] = `# Skill: Create a NestJS Guard
+  files['.github/skills/create-nestjs-guard.md'] = `# Skill: Create a NestJS Guard
 
 ## Auth Guard Template
 \\\`\\\`\\\`typescript
@@ -1265,7 +2045,7 @@ export class JwtAuthGuard implements CanActivate {
     ]);
     if (isPublic) return true;
 
-    const request = context.switchToHttp().getRequest();
+    const request = context.switchToHttp().getRequest<{ headers: { authorization?: string } }>();
     const token = this.extractToken(request);
     if (!token) throw new UnauthorizedException('Missing auth token');
 
@@ -1278,7 +2058,7 @@ export class JwtAuthGuard implements CanActivate {
     }
   }
 
-  private extractToken(request: any): string | null {
+  private extractToken(request: { headers: { authorization?: string } }): string | null {
     const [type, token] = request.headers.authorization?.split(' ') ?? [];
     return type === 'Bearer' ? token : null;
   }
