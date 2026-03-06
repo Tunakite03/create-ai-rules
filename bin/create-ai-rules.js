@@ -62,7 +62,7 @@ if (opts.help) {
   ${bold('Flags')}
     -y, --yes           Accept defaults (Copilot + Generic, TypeScript stack)
     -f, --force         Overwrite existing files
-    --stack=<name,...>  Set stack(s): ts,react,node,nestjs,python,unity,go,flutter (used with -y)
+    --stack=<name,...>  Set stack(s): ${stackHelpFlagList} (comma-separated, used with -y)
 
     --minimal           Skip optional files (prompts, skills, extras)
     --check-rules       Validate generated base rules for conflicts

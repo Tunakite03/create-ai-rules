@@ -73,7 +73,8 @@ Các cờ chính (đồng bộ với `bin/create-ai-rules.js`):
 ## Supported stacks
 Có thể chọn một hoặc nhiều stack:
 - `ts` (TypeScript generic)
-- `react` (React / Next.js)
+- `react` (React)
+- `nextjs` (Next.js)
 - `node` (Node.js API)
 - `nestjs` (NestJS)
 - `python` (Python)

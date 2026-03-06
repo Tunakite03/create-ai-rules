@@ -57,9 +57,10 @@ export const TARGETS = [
 
 export const STACKS = [
    { key: 'ts', label: 'TypeScript (generic)' },
-   { key: 'react', label: 'React / Next.js' },
+   { key: 'react', label: 'React' },
    { key: 'node', label: 'Node.js API' },
    { key: 'nestjs', label: 'NestJS' },
+   { key: 'nextjs', label: 'Next.js' },
    { key: 'python', label: 'Python' },
    { key: 'unity', label: 'Unity (C#)' },
    { key: 'go', label: 'Go (Golang)' },
