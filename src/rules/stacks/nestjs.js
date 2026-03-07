@@ -9,6 +9,7 @@ const NESTJS_RULES = {
 - Use custom exception filters to map domain errors to consistent HTTP responses.
 - Inject dependencies via constructor; avoid \`ModuleRef.get()\` for regular service wiring.
 - Use \`@UseGuards\` / \`@UseInterceptors\` at controller or global scope — not inline in methods.
+- Organize by feature modules with colocated controller, service, DTOs, and entities per domain.
 `,
    strict: `## NestJS
 - MUST enforce module/controller/service layer separation — no business logic in controllers.
@@ -25,6 +26,30 @@ const NESTJS_RULES = {
   \`\`\`ts
   // ✓ throw new UserNotFoundError(id);  // caught by DomainExceptionFilter → 404
   // ✗ throw new NotFoundException(\`User \${id} not found\`);  // couples service to HTTP
+  \`\`\`
+- MUST follow feature-module folder structure:
+  \`\`\`
+  src/
+  ├── main.ts
+  ├── app.module.ts
+  ├── common/                  # Shared cross-cutting concerns
+  │   ├── decorators/
+  │   ├── filters/             # Global exception filters
+  │   ├── guards/              # Auth, role guards
+  │   ├── interceptors/        # Logging, transform interceptors
+  │   └── pipes/               # Custom validation pipes
+  ├── config/                  # Configuration module & env validation
+  │   └── config.module.ts
+  ├── modules/
+  │   └── <feature>/           # One module per domain
+  │       ├── dto/             # Request/response DTOs
+  │       ├── entities/        # TypeORM/Prisma entities
+  │       ├── <feature>.controller.ts
+  │       ├── <feature>.service.ts
+  │       ├── <feature>.module.ts
+  │       ├── <feature>.repository.ts
+  │       └── <feature>.controller.spec.ts
+  └── shared/                  # Shared services, utilities, constants
   \`\`\`
 - SHOULD scope providers to the correct lifecycle (\`REQUEST\` for per-request state, default singleton for stateless services).
 - SHOULD use interceptors for cross-cutting concerns (logging, response transforms) — not ad-hoc in services.

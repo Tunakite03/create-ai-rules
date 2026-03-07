@@ -6,6 +6,7 @@ const GO_RULES = {
 - Check errors immediately and wrap with context.
 - Pass \`context.Context\` for cancellable I/O.
 - Keep goroutines cancelable and synchronized.
+- Follow Standard Go Project Layout: \`cmd/\` for entry points, \`internal/\` for private code, \`pkg/\` for public libraries.
 `,
    strict: `## Go
 - MUST check and wrap errors at call sites.
@@ -17,6 +18,25 @@ const GO_RULES = {
   \`\`\`go
   // ✓ func FetchUser(ctx context.Context, id string) (*User, error)
   // ✗ func FetchUser(id string) (*User, error)  // no cancellation
+  \`\`\`
+- MUST follow Standard Go Project Layout:
+  \`\`\`
+  cmd/
+  ├── <app>/
+  │   └── main.go                # Application entry point
+  internal/                      # Private application code
+  ├── <domain>/
+  │   ├── handler.go             # HTTP/gRPC handlers
+  │   ├── service.go             # Business logic
+  │   ├── repository.go          # Data access
+  │   ├── model.go               # Domain types
+  │   └── handler_test.go
+  ├── config/                    # App configuration
+  ├── middleware/                # HTTP middleware
+  └── platform/                  # DB, cache, queue clients
+  pkg/                           # Public reusable libraries
+  ├── <lib>/
+  migrations/                    # Database migrations
   \`\`\`
 - SHOULD bound goroutines and protect shared state.
 `,

@@ -11,6 +11,7 @@ const REACT_RULES = {
 - Use \`useCallback\` for handlers passed to children; \`useMemo\` for expensive computations.
 - Handle loading, error, and empty states explicitly in components.
 - Prefer controlled components for forms; validate with libraries (react-hook-form + zod).
+- Use feature-based folder structure: colocate components, hooks, types, and tests per feature.
 `,
    strict: `## React
 - MUST use functional components with explicit TypeScript prop interfaces.
@@ -32,6 +33,27 @@ const REACT_RULES = {
   \`\`\`tsx
   // ✓ if (isLoading) return <Skeleton />; if (error) return <ErrorBoundary />; if (!data.length) return <Empty />
   // ✗ return data.map(item => ...) // crashes on undefined
+  \`\`\`
+- MUST use feature-based folder structure:
+  \`\`\`
+  src/
+  ├── app/                       # App entry, routing, providers
+  │   ├── App.tsx
+  │   ├── routes.tsx
+  │   └── providers/             # Context providers (Auth, Theme)
+  ├── components/                # Shared UI components
+  │   └── ui/                    # Primitives (Button, Input, Modal)
+  ├── features/                  # Feature modules (domain-driven)
+  │   └── <feature>/
+  │       ├── components/        # Feature-specific components
+  │       ├── hooks/             # Feature-specific hooks
+  │       ├── api/               # Feature API calls / queries
+  │       ├── types.ts
+  │       └── index.ts           # Public barrel export
+  ├── hooks/                     # Shared custom hooks
+  ├── lib/                       # Utilities, helpers, API client
+  ├── types/                     # Global TypeScript types
+  └── styles/                    # Global styles, theme
   \`\`\`
 - SHOULD use error boundaries for component-level error recovery.
 - SHOULD memoize expensive computations and callbacks passed to children.
